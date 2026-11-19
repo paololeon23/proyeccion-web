@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>QBerries · Proyecciones</title>
+    <link rel="icon" type="image/png" href="assets/logo-qberries.png" />
+    <link rel="apple-touch-icon" href="assets/logo-qberries.png" />
+    <meta name="theme-color" content="#c40610" />
+    <meta name="qberries-api" content="https://script.google.com/macros/s/AKfycbxxLAKdchGStfg2IIkaeJKgDdsRgTf9-s-jg3cYz6k2dgZcaJj-54CFLgwPled2fr24/exec" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" /></noscript>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link rel="stylesheet" href="css/shell.css?v=proy14" />
+    <link rel="stylesheet" href="css/styles.css?v=proy14" />
+    <link rel="stylesheet" href="css/dashboard.css?v=proy14" />
+    <link rel="stylesheet" href="css/responsive.css?v=proy14" />
+    <link rel="stylesheet" href="css/proy.css?v=proy27" />
+  </head>
+  <body>
+    <div id="backdrop" class="backdrop"></div>
+    <aside id="sidebar" class="sidebar">
+      <a class="brand" href="#/registros">
+        <img src="assets/logo-qberries.png" alt="QBerries" width="168" height="156" decoding="async" />
+      </a>
+      <nav class="nav">
+        <p class="nav-label">Operación</p>
+        <a href="#/registros" class="on">
+          <svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16"/><path d="M8 15v-4M12 15V8M16 15v-7"/></svg>
+          Registros
+        </a>
+        <a href="#/escaneadas">
+          <svg viewBox="0 0 24 24"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M12 17.5V11"/><path d="M12 11c0-3.2 2.4-5.2 5.6-5.4-.5 3.2-2.4 5.4-5.6 5.4z"/><path d="M12 12.6c0-2.4-2-4.2-4.6-4.4.5 2.4 2.2 4.4 4.6 4.4z"/></svg>
+          Plantas escaneadas
+        </a>
+        <a href="#/usuarios">
+          <svg viewBox="0 0 24 24"><path d="M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1"/><circle cx="9.5" cy="7" r="3.5"/><path d="M19 8v6M22 11h-6"/></svg>
+          Usuarios activos
+        </a>
+        <p class="nav-label">Datos</p>
+        <a href="#/movimientos">
+          <svg viewBox="0 0 24 24"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="8"/></svg>
+          Movimientos del sistema
+        </a>
+      </nav>
+      <div class="side-card">
+        <strong>Proyecciones</strong>
+        <small>Oficina: consulta y exporta las cartillas capturadas en campo vía API.</small>
+      </div>
+      <button type="button" id="side-logout" class="side-logout">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 7V5a2 2 0 0 1 2-2h7v18h-7a2 2 0 0 1-2-2v-2"/><path d="M15 12H3m0 0 3-3M3 12l3 3"/></svg>
+        Cerrar sesión
+      </button>
+    </aside>
+
+    <div class="shell">
+      <header class="topbar">
+        <button id="menu" class="icon-btn menu-btn" type="button" aria-label="Menú">☰</button>
+        <label class="search-bar">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="q" type="search" placeholder="Buscar lote, evaluador…" />
+        </label>
+        <div class="top-actions">
+          <button id="refresh-btn" class="icon-btn" type="button" aria-label="Actualizar">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><path d="M21 3v6h-6"/></svg>
+          </button>
+          <div class="notify-wrap">
+            <button id="notify-btn" class="icon-btn" type="button" aria-label="Notificaciones" aria-expanded="false">
+              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15L6 16z"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>
+              <span id="notify-badge" hidden>0</span>
+            </button>
+            <div id="notify-menu" class="notify-menu" hidden>
+              <p class="notify-title">Nueva data</p>
+              <div id="notify-list"><p class="notify-empty">Sin avisos nuevos</p></div>
+            </div>
+          </div>
+          <div class="hello-wrap">
+            <button type="button" class="hello" id="hello-btn" aria-haspopup="true" aria-expanded="false">
+              <span class="hello-pic"><img src="assets/logo-qberries.png" alt="" width="36" height="36" /></span>
+              <span class="hello-meta">
+                <strong id="hello-name">Administrador</strong>
+                <small>Proyecciones</small>
+              </span>
+            </button>
+            <div id="hello-menu" class="hello-menu" hidden>
+              <p class="hello-menu-name" id="hello-menu-name">Administrador</p>
+              <button type="button" id="logout-btn">Cerrar sesión</button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="page on" data-page="registros">
+          <div class="hero-row">
+            <section class="welcome-card" aria-label="Bienvenida">
+              <div class="welcome-photo">
+                <img src="assets/proyeccion.png" alt="Equipo de proyecciones QBerries" />
+              </div>
+              <div class="welcome-text">
+                <p class="welcome-kicker">Panel de proyecciones · QBerries</p>
+                <h1>Bienvenido al resumen de proyecciones</h1>
+                <p>Aquí ve las cartillas de campo, los kilos por etapa y el acceso de los evaluadores.</p>
+                <div class="welcome-chips">
+                  <span>Hoja Proyecciones</span>
+                  <span>Hoja Evaluadores</span>
+                </div>
+              </div>
+            </section>
+            <aside class="cloud-card" id="cloud-card" aria-label="Descarga en tiempo real">
+              <div class="cloud-top">
+                <span class="live-pill"><i></i>Tiempo real</span>
+                <svg class="cloud-ico" viewBox="0 0 64 48" aria-hidden="true">
+                  <path d="M18 36h28a10 10 0 0 0 1.2-19.9A14 14 0 0 0 20 12.2 11 11 0 0 0 18 36z"></path>
+                  <g class="cloud-drops">
+                    <path d="M24 40v6"></path><path d="M32 42v8"></path><path d="M40 40v6"></path>
+                  </g>
+                </svg>
+              </div>
+              <p class="cloud-kicker">Nube QBerries</p>
+              <p class="cloud-pct" id="cloud-pct">0%</p>
+              <p class="cloud-note" id="cloud-note">Analizando data de campo</p>
+              <div class="cloud-track"><i id="cloud-bar"></i></div>
+              <p class="cloud-sub">Sincronización continua</p>
+            </aside>
+          </div>
+          <header class="dash-head">
+            <div class="filters">
+              <label class="field"><span>Campaña</span><select id="f-campana" aria-label="Campaña"></select></label>
+              <label class="field"><span>Desde</span><input id="f-desde" type="date" aria-label="Fecha desde" /></label>
+              <label class="field"><span>Hasta</span><input id="f-hasta" type="date" aria-label="Fecha hasta" /></label>
+              <label class="field"><span>Módulo</span><select id="f-modulo" aria-label="Módulo"></select></label>
+              <label class="field"><span>Turno</span><select id="f-turno" aria-label="Turno"></select></label>
+              <label class="field"><span>Lote</span><select id="f-lote" aria-label="Lote"></select></label>
+              <label class="field"><span>Evaluador</span><select id="f-evaluador" aria-label="Evaluador"></select></label>
+            </div>
+          </header>
+
+          <section class="table-panel table-panel-lg">
+            <div class="table-head">
+              <h2>Registros · General</h2>
+              <div class="table-tools">
+                <input id="q-detalle" type="search" placeholder="Buscar lote, evaluador…" />
+                <button type="button" class="ghost-btn" id="btn-csv">CSV</button>
+                <button type="button" class="ghost-btn" id="btn-xls">Excel</button>
+              </div>
+            </div>
+            <div class="table-scroll table-scroll-lg">
+              <table class="he" id="tabla-registros">
+                <thead><tr id="table-head"></tr></thead>
+                <tbody id="table-body"></tbody>
+              </table>
+            </div>
+            <div class="table-footbar">
+              <div id="table-count" class="page-count"></div>
+              <div id="table-pager"></div>
+            </div>
+          </section>
+        </section>
+
+        <section class="page" data-page="escaneadas">
+          <div class="escaneadas-top">
+            <div class="page-title">
+              <h1>Plantas escaneadas</h1>
+              <p id="escaneadas-chip">Resumen en KG. Filtros tomados de Registros.</p>
+            </div>
+            <div class="gramos-box">
+              <label class="gramos-label" for="f-gramos">Ingresa los gramos</label>
+              <input id="f-gramos" type="number" min="0.01" step="0.01" value="3.50" aria-label="Peso baya en gramos" />
+            </div>
+          </div>
+          <section class="table-panel table-panel-lg resumen-kg">
+            <div class="table-head">
+              <h2>Tabla resumen · KG</h2>
+            </div>
+            <div class="table-scroll">
+              <table class="he" id="tabla-kg">
+                <thead><tr id="kg-head"></tr></thead>
+                <tbody id="kg-body"></tbody>
+              </table>
+            </div>
+            <div class="table-footbar">
+              <div id="kg-count" class="page-count"></div>
+              <div id="kg-pager"></div>
+            </div>
+          </section>
+        </section>
+
+        <section class="page" data-page="usuarios">
+          <div class="page-title">
+            <h1>Usuarios activos</h1>
+            <p>Quién puede usar el sistema. Activo = acceso; sin acceso = ya no opera.</p>
+          </div>
+          <section class="table-panel table-panel-lg">
+            <div class="table-head">
+              <h2>Evaluadores</h2>
+              <div class="table-tools">
+                <input id="q-usuarios" type="search" placeholder="Buscar DNI o nombre…" />
+              </div>
+            </div>
+            <div class="table-scroll table-scroll-lg">
+              <table class="he users-table">
+                <thead>
+                  <tr>
+                    <th>DNI</th>
+                    <th class="col-user">Usuario</th>
+                    <th>Rol</th>
+                    <th>Estado</th>
+                    <th class="col-actions">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="users-body"></tbody>
+              </table>
+            </div>
+            <div class="table-footbar"><div id="users-pager"></div></div>
+          </section>
+        </section>
+
+        <section class="page" data-page="movimientos">
+          <div class="page-title">
+            <h1>Movimientos del sistema</h1>
+            <p>Quién filtró o exportó, con fecha y hora.</p>
+          </div>
+          <section class="table-panel">
+            <div class="table-head">
+              <h2>Historial</h2>
+              <span id="audit-count"></span>
+            </div>
+            <div class="table-scroll">
+              <table class="he">
+                <thead>
+                  <tr>
+                    <th>Fecha y hora</th>
+                    <th>Usuario</th>
+                    <th>Acción</th>
+                    <th>Detalle</th>
+                  </tr>
+                </thead>
+                <tbody id="audit-body"></tbody>
+              </table>
+            </div>
+            <div class="table-footbar"><div id="audit-pager"></div></div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <div id="confirm" class="confirm" hidden>
+      <div class="confirm-card" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+        <h2 id="confirm-title">Confirmar</h2>
+        <p id="confirm-text"></p>
+        <div class="confirm-actions">
+          <button type="button" id="confirm-no">Cancelar</button>
+          <button type="button" id="confirm-yes">Confirmar</button>
+        </div>
+      </div>
+    </div>
+    <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
+    <div id="loading" class="loading" hidden>
+      <div class="loading-card"><span class="spin"></span><span id="loading-text">Cargando…</span></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="js/config.js?v=proy14"></script>
+    <script src="js/performance.js?v=proy14"></script>
+    <script src="js/audit.js?v=proy14"></script>
+    <script src="js/data.js?v=proy14"></script>
+    <script src="js/filters.js?v=proy24"></script>
+    <script src="js/table.js?v=proy14"></script>
+    <script src="js/summary.js?v=proy16"></script>
+    <script src="js/users.js?v=proy26"></script>
+    <script src="js/api.js?v=proy14"></script>
+    <script src="js/app.js?v=proy22"></script>
+    <script src="js/auth.js?v=proy14"></script>
+    <script src="js/shell.js?v=proy22"></script>
+  </body>
+</html>

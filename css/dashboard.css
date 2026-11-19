@@ -1,0 +1,284 @@
+.grid-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
+  min-height: min(720px, calc(100vh - 250px));
+}
+.col-left {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: minmax(240px, 1fr) minmax(240px, 1fr);
+  gap: 12px;
+}
+.col-right {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.card {
+  background: #fff;
+  min-width: 0;
+  min-height: 0;
+  padding: 10px 12px 8px;
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+}
+.col-right .card { flex: 1 1 auto; }
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex: 0 0 auto;
+  min-height: 28px;
+  margin-bottom: 6px;
+}
+.card h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: #1a1a1a;
+  letter-spacing: -0.02em;
+  min-width: 0;
+}
+.chart-dl {
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: #f3f6f0;
+  color: var(--green-dark);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  flex: 0 0 auto;
+}
+.chart-dl:hover { background: var(--qb-soft); }
+.chart {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  height: auto;
+  overflow: visible;
+}
+#chart-cost-area, #chart-week { height: auto; min-height: 0; }
+.page-title { margin: 4px 0 14px; }
+.page-title h1 {
+  margin: 0 0 6px;
+  font-size: var(--fs-title);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+.page-title p { margin: 0; color: var(--muted); font-size: var(--fs-md); line-height: 1.45; }
+.table-panel {
+  margin-top: 16px;
+  background: #fff;
+  border-radius: 18px;
+  padding: 14px 16px 12px;
+  box-shadow: 0 10px 28px rgba(17, 24, 39, 0.05);
+}
+.table-panel-lg { margin-top: 0; }
+.page.on[data-page="planilla"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 130px);
+}
+.planilla-wrap {
+  width: min(560px, 100%);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.page[data-page="planilla"] .page-title {
+  text-align: center;
+  margin: 0 0 18px;
+  max-width: 440px;
+}
+.page[data-page="planilla"] .page-title h1 { font-size: 26px; }
+.page[data-page="planilla"] .page-title p { font-size: 14px; line-height: 1.45; }
+.planilla-card {
+  width: 100%;
+  max-width: none;
+  padding: 22px;
+  border-radius: 24px;
+  text-align: center;
+  box-shadow: 0 18px 48px rgba(20, 24, 30, 0.08);
+}
+.dropzone {
+  border: 1.5px dashed #c9d4bc;
+  border-radius: 20px;
+  padding: 44px 24px 40px;
+  text-align: center;
+  cursor: pointer;
+  background: #fbfdf7;
+  outline: none;
+  transition: background 0.16s ease, box-shadow 0.16s ease;
+}
+.dropzone:hover,
+.dropzone.on,
+.dropzone:focus {
+  background: #f3f9e8;
+  box-shadow: inset 0 0 0 1px rgba(141, 198, 63, 0.35);
+}
+.drop-ico {
+  display: block;
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 12px;
+}
+.dropzone strong {
+  display: block;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.dropzone small {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.planilla-card .src-status {
+  margin: 16px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+.planilla-hint {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 8px 0 0;
+}
+.table-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.table-head h2 {
+  margin: 0;
+  font-size: var(--fs-lg);
+  font-weight: 800;
+  color: var(--ink);
+}
+.table-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.table-tools input {
+  height: 40px;
+  min-width: 220px;
+}
+.table-scroll {
+  max-height: 360px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 10px;
+}
+.table-scroll-lg {
+  max-height: none;
+  min-height: 0;
+}
+table.he {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  background: #fff;
+}
+table.he thead th {
+  position: sticky;
+  top: 0;
+  background: var(--green-dark);
+  color: #fff;
+  font-weight: 700;
+  text-align: left;
+  padding: 10px 10px;
+  white-space: nowrap;
+  border-bottom: 2px solid var(--yellow);
+  cursor: pointer;
+  z-index: 1;
+  letter-spacing: 0.02em;
+  font-size: var(--fs-xs);
+}
+table.he td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #e6ebe0;
+  color: var(--ink);
+  background: #fff;
+  font-size: var(--fs-sm);
+}
+table.he tbody tr:nth-child(even) td { background: #f7faf3; }
+table.he tbody tr:hover td { background: var(--qb-soft); }
+table.he .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+table.he th[data-key="Evaluador"],
+table.he td.col-evaluador {
+  white-space: nowrap;
+  min-width: 11.5rem;
+}
+table.he tfoot td {
+  font-weight: 800;
+  border-top: 2px solid var(--green);
+  background: #fff;
+  padding: 8px;
+}
+table.he .empty td { text-align: center; color: var(--muted); padding: 28px; }
+.table-footbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 2px 2px;
+  font-size: 12px;
+  color: var(--muted);
+}
+#table-pager, #audit-pager, #users-pager {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+#table-pager button, #audit-pager button, #users-pager button {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 0;
+  background: #fff;
+  color: var(--green-dark);
+  font-size: 12px;
+  font-weight: 800;
+  box-shadow: inset 0 0 0 1px #d5e3c2;
+}
+#table-pager button.pg-num.on, #users-pager button.pg-num.on {
+  background: var(--green);
+  color: #fff;
+  box-shadow: none;
+}
+#table-pager button:hover:not(:disabled),
+#audit-pager button:hover:not(:disabled),
+#users-pager button:hover:not(:disabled) {
+  background: var(--qb-soft);
+}
+#table-pager button:disabled, #audit-pager button:disabled, #users-pager button:disabled {
+  opacity: .4;
+  cursor: default;
+}
+.pg-info {
+  margin-left: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
