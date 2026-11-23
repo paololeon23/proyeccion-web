@@ -17,7 +17,7 @@
   }
   root.QBE.config = {
     apiUrl: apiUrl,
-    timeoutMs: 40000,
+    timeoutMs: 20000,
     retries: 1,
     empresa: "QBerries",
     pageSize: 10,
@@ -46,7 +46,6 @@
       "E4 (50%-70%)",
       "E5 (Maduro)",
       "Observación",
-      "Foto cabecera",
       "Modulo",
       "Turno",
       "Lotes",
@@ -55,6 +54,28 @@
       "Variedad",
       "Area",
       "Campaña",
+    ],
+    tableHide: [
+      "Observación",
+      "Modulo",
+      "Turno",
+      "Lotes",
+      "Semana",
+      "Etapa",
+      "Variedad",
+      "Area",
+      "Campaña",
+    ],
+    detailFields: [
+      "Modulo",
+      "Turno",
+      "Lotes",
+      "Semana",
+      "Etapa",
+      "Variedad",
+      "Area",
+      "Campaña",
+      "Observación",
     ],
   };
 })(typeof window !== "undefined" ? window : globalThis);

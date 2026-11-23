@@ -76,6 +76,38 @@
     return (root.performance && performance.now) ? performance.now() : Date.now();
   }
 
+  function downloadBlob(filename, blob) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.rel = "noopener";
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: root }));
+    setTimeout(function () {
+      URL.revokeObjectURL(url);
+      if (a.parentNode) a.parentNode.removeChild(a);
+    }, 2500);
+  }
+
+  function downloadCsv(filename, aoa) {
+    var rows = aoa || [];
+    if (typeof XLSX !== "undefined") {
+      var ws = XLSX.utils.aoa_to_sheet(rows);
+      var csv = XLSX.utils.sheet_to_csv(ws, { FS: ";" });
+      downloadBlob(filename, new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" }));
+      return;
+    }
+    var lines = rows.map(function (r) {
+      return (r || []).map(function (v) {
+        var s = String(v == null ? "" : v);
+        return /[",\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+      }).join(";");
+    });
+    downloadBlob(filename, new Blob(["\ufeff" + lines.join("\n")], { type: "text/csv;charset=utf-8;" }));
+  }
+
   QBE.perf = {
     debounce: debounce,
     throttleRaf: throttleRaf,
@@ -87,5 +119,7 @@
     lsGet: lsGet,
     lsSet: lsSet,
     nowMs: nowMs,
+    downloadBlob: downloadBlob,
+    downloadCsv: downloadCsv,
   };
 })(typeof window !== "undefined" ? window : globalThis);

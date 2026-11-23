@@ -58,19 +58,36 @@
     STAGES.forEach(function (st) { t += vals[st.key] || 0; });
     return t;
   }
+  function turnoOf(r) {
+    var t = r.Turno;
+    if (t === "" || t == null) return "—";
+    return String(t);
+  }
+  function sortTurnoKeys(keys) {
+    return keys.slice().sort(function (a, b) {
+      var na = Number(a);
+      var nb = Number(b);
+      if (isFinite(na) && isFinite(nb)) return na - nb;
+      return String(a).localeCompare(String(b), "es");
+    });
+  }
   function aggregate(records) {
     var g = grams();
     var byCampo = {};
     (records || []).forEach(function (r) {
       var campo = campoOf(r);
+      var turno = turnoOf(r);
       var lote = String(r.Lote || "Sin lote").trim() || "Sin lote";
-      if (!byCampo[campo]) byCampo[campo] = { name: campo, lots: {}, totals: zeros(), area: 0 };
+      if (!byCampo[campo]) byCampo[campo] = { name: campo, turnos: {}, totals: zeros(), area: 0 };
       var group = byCampo[campo];
-      if (!group.lots[lote]) group.lots[lote] = { name: lote, vals: zeros(), area: 0 };
-      var lot = group.lots[lote];
+      if (!group.turnos[turno]) group.turnos[turno] = { name: turno, lots: {}, totals: zeros() };
+      var turn = group.turnos[turno];
+      if (!turn.lots[lote]) turn.lots[lote] = { name: lote, vals: zeros(), area: 0 };
+      var lot = turn.lots[lote];
       STAGES.forEach(function (st) {
         var kg = toKg(r[st.key], g);
         lot.vals[st.key] += kg;
+        turn.totals[st.key] += kg;
         group.totals[st.key] += kg;
       });
       var area = Number(r.Area) || 0;
@@ -79,25 +96,43 @@
     });
     return { g: g, groups: Object.keys(byCampo).sort().map(function (k) { return byCampo[k]; }) };
   }
-  function rowHtml(label, vals, kind, on) {
+  function rowHtml(label, vals, kind, on, meta) {
     var total = sumVals(vals);
     var cells = STAGES.map(function (st) {
       var n = vals[st.key] || 0;
       return '<td class="num' + heat(n, on) + '">' + fmt(n) + "</td>";
     }).join("");
-    var cls = kind === "campo" ? "row-campo" : (kind === "total" ? "row-total" : "row-lote");
-    return "<tr class=\"" + cls + "\"><td>" + esc(label) + "</td>" + cells +
+    var cls = kind === "campo" ? "row-campo" : (kind === "turno" ? "row-turno" : (kind === "total" ? "row-total" : "row-lote"));
+    var attrs = "";
+    var first = esc(label);
+    if (kind === "turno" && meta && meta.turnoKey) {
+      var closed = !!collapsed[meta.turnoKey];
+      cls += closed ? " is-collapsed" : " is-open";
+      attrs = ' data-turno-key="' + esc(meta.turnoKey) + '" role="button" tabindex="0" aria-expanded="' + (closed ? "false" : "true") + '"';
+      first = '<span class="turno-toggle" aria-hidden="true"></span>' + esc(label);
+    }
+    if (kind === "lote" && meta && meta.turnoKey) {
+      attrs = ' data-parent-turno="' + esc(meta.turnoKey) + '"' + (collapsed[meta.turnoKey] ? " hidden" : "");
+    }
+    return "<tr class=\"" + cls + "\"" + attrs + "><td>" + first + "</td>" + cells +
       '<td class="num">' + fmt(total) + "</td></tr>";
   }
   var page = 1;
   var pageSize = 8;
   var pagerBound = false;
+  var exportBound = false;
+  var toggleBound = false;
+  var lastAgg = null;
+  var collapsed = {};
 
   function flatLots(groups) {
     var rows = [];
     groups.forEach(function (g) {
-      Object.keys(g.lots).sort().forEach(function (lk) {
-        rows.push({ campo: g.name, lot: g.lots[lk] });
+      sortTurnoKeys(Object.keys(g.turnos || {})).forEach(function (tk) {
+        var turn = g.turnos[tk];
+        Object.keys(turn.lots).sort().forEach(function (lk) {
+          rows.push({ campo: g.name, turno: turn.name, turnTotals: turn.totals, lot: turn.lots[lk] });
+        });
       });
     });
     return rows;
@@ -138,13 +173,88 @@
       if (QBE.app && QBE.app.refresh) QBE.app.refresh();
     });
   }
+  function exportRows(asXls) {
+    var agg = lastAgg;
+    if (!agg) return;
+    var cols = ["Campo / Lote"].concat(STAGES.map(function (st) { return st.label; })).concat(["Total"]);
+    var aoa = [cols];
+    agg.groups.forEach(function (g) {
+      aoa.push([g.name].concat(STAGES.map(function (st) { return Number((g.totals[st.key] || 0).toFixed(4)); })).concat([Number(sumVals(g.totals).toFixed(4))]));
+      sortTurnoKeys(Object.keys(g.turnos || {})).forEach(function (tk) {
+        var turn = g.turnos[tk];
+        aoa.push(["Turno " + turn.name].concat(STAGES.map(function (st) { return Number((turn.totals[st.key] || 0).toFixed(4)); })).concat([Number(sumVals(turn.totals).toFixed(4))]));
+        Object.keys(turn.lots).sort().forEach(function (lk) {
+          var lot = turn.lots[lk];
+          aoa.push([lot.name].concat(STAGES.map(function (st) { return Number((lot.vals[st.key] || 0).toFixed(4)); })).concat([Number(sumVals(lot.vals).toFixed(4))]));
+        });
+      });
+    });
+    var grand = zeros();
+    agg.groups.forEach(function (g) {
+      STAGES.forEach(function (st) { grand[st.key] += g.totals[st.key]; });
+    });
+    aoa.push(["Total"].concat(STAGES.map(function (st) { return Number((grand[st.key] || 0).toFixed(4)); })).concat([Number(sumVals(grand).toFixed(4))]));
+    if (asXls && typeof XLSX !== "undefined") {
+      var wb = XLSX.utils.book_new();
+      var ws = XLSX.utils.aoa_to_sheet(aoa);
+      XLSX.utils.book_append_sheet(wb, ws, "KG");
+      XLSX.writeFile(wb, "plantas-escaneadas-qberries.xlsx");
+    } else if (QBE.perf && QBE.perf.downloadCsv) {
+      QBE.perf.downloadCsv("plantas-escaneadas-qberries.csv", aoa);
+    }
+    if (QBE.audit) QBE.audit.add(asXls ? "Exportar Excel KG" : "Exportar CSV KG", (aoa.length - 1) + " filas");
+  }
+  function bindExport() {
+    if (exportBound) return;
+    exportBound = true;
+    var csv = document.getElementById("btn-kg-csv");
+    var xls = document.getElementById("btn-kg-xls");
+    if (csv) csv.addEventListener("click", function () { exportRows(false); });
+    if (xls) xls.addEventListener("click", function () { exportRows(true); });
+  }
+  function applyTurnoCollapse(body, key, hide) {
+    if (!body) return;
+    body.querySelectorAll('tr.row-lote[data-parent-turno="' + key + '"]').forEach(function (tr) {
+      tr.hidden = !!hide;
+    });
+    var head = body.querySelector('tr.row-turno[data-turno-key="' + key + '"]');
+    if (!head) return;
+    head.classList.toggle("is-collapsed", !!hide);
+    head.classList.toggle("is-open", !hide);
+    head.setAttribute("aria-expanded", hide ? "false" : "true");
+  }
+  function bindToggle() {
+    var body = document.getElementById("kg-body");
+    if (!body || toggleBound) return;
+    toggleBound = true;
+    body.addEventListener("click", function (e) {
+      var tr = e.target.closest("tr.row-turno");
+      if (!tr || !body.contains(tr)) return;
+      var key = tr.getAttribute("data-turno-key");
+      if (!key) return;
+      var hide = !collapsed[key];
+      if (hide) collapsed[key] = 1;
+      else delete collapsed[key];
+      applyTurnoCollapse(body, key, hide);
+    });
+    body.addEventListener("keydown", function (e) {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      var tr = e.target.closest("tr.row-turno");
+      if (!tr || !body.contains(tr)) return;
+      e.preventDefault();
+      tr.click();
+    });
+  }
   function render(records) {
     var head = document.getElementById("kg-head");
     var body = document.getElementById("kg-body");
     var count = document.getElementById("kg-count");
     var pager = document.getElementById("kg-pager");
     bindPager();
+    bindExport();
+    bindToggle();
     var agg = aggregate(records);
+    lastAgg = agg;
     if (head) {
       head.innerHTML = '<th class="th-campo">Campo</th>' + STAGES.map(function (st) {
         return '<th class="num">' + esc(st.label) + "</th>";
@@ -165,7 +275,9 @@
     var slice = lots.slice(from, from + pageSize);
     var html = "";
     var lastCampo = "";
+    var lastTurno = "";
     slice.forEach(function (item) {
+      var turnoKey = item.campo + "|" + item.turno;
       if (item.campo !== lastCampo) {
         var group = null;
         var i;
@@ -174,8 +286,13 @@
         }
         if (group) html += rowHtml(group.name, group.totals, "campo", false);
         lastCampo = item.campo;
+        lastTurno = "";
       }
-      html += rowHtml(item.lot.name, item.lot.vals, "lote", false);
+      if (String(item.turno) !== String(lastTurno)) {
+        html += rowHtml("Turno " + item.turno, item.turnTotals, "turno", false, { turnoKey: turnoKey });
+        lastTurno = item.turno;
+      }
+      html += rowHtml(item.lot.name, item.lot.vals, "lote", false, { turnoKey: turnoKey });
     });
     var grand = zeros();
     agg.groups.forEach(function (g) {

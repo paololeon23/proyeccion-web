@@ -50,11 +50,10 @@
       if (!el || !el.value || el.value === "*") return;
       bits.push(label + " " + (el.tagName === "SELECT" ? el.options[el.selectedIndex].text : el.value));
     }
-    one("f-campana", "Campaña");
     one("f-modulo", "Módulo");
-    one("f-turno", "Turno");
-    one("f-lote", "Lote");
     one("f-evaluador", "Evaluador");
+    one("f-etapa", "Etapa");
+    one("f-semana", "Semana");
     if (f.desde) bits.push("Desde " + f.desde);
     if (f.hasta) bits.push("Hasta " + f.hasta);
     if (f.q) bits.push('Búsqueda "' + f.q + '"');
@@ -129,6 +128,8 @@
   function usePack(next, source, quiet) {
     var raw = (next && next.records) || [];
     var incoming = dedupe(raw.map(function (r) { return QBE.data.normalize(r); }));
+    incoming.reverse();
+    incoming.forEach(function (r, i) { r._ord = i; });
     var fresh = [];
     incoming.forEach(function (r) {
       var key = rowKey(r);
@@ -142,16 +143,19 @@
       source: source || "api",
       generatedAt: (next && next.generatedAt) || "",
     };
-    QBE.filters.render(QBE.data.optionsFrom(pack.records));
-    if (!quiet) QBE.table.resetPage();
-    refresh();
+    if (!quiet || fresh.length) {
+      QBE.filters.render(QBE.data.optionsFrom(pack.records));
+      QBE.table.resetPage();
+    }
+    refresh({ skipSummary: !!quiet && !fresh.length });
     if (primed && fresh.length) pushNotes(fresh);
     primed = true;
     var n = pack.records.length;
     if (n) setStatus("Planilla · " + n.toLocaleString("es-PE") + " registros", "ok");
     else setStatus("La hoja Proyecciones no tiene filas.", "warn");
   }
-  function refresh() {
+  function refresh(opts) {
+    opts = opts || {};
     if (busy) return;
     busy = true;
     var t0 = QBE.perf.nowMs();
@@ -159,7 +163,7 @@
       var f = QBE.filters.current();
       filtered = QBE.data.filterRecords(pack.records, f);
       QBE.table.render(filtered, { colores: f.colores });
-      if (QBE.summary) QBE.summary.render(filtered);
+      if (!opts.skipSummary && QBE.summary) QBE.summary.render(filtered);
       var chip = $("escaneadas-chip");
       if (chip) chip.textContent = "Filtros: " + filterLabel() + ".";
     } finally {
@@ -225,20 +229,32 @@
     spinRefresh(true);
     loadRemote();
   }
+  var pollBusy = false;
+  function pollOnce() {
+    if (document.hidden || busy || pollBusy || !QBE.api || !QBE.api.url()) return;
+    pollBusy = true;
+    QBE.api.list({}, { timeoutMs: 12000 }).then(function (data) {
+      usePack(data, "api", true);
+    }).catch(function () {}).finally(function () {
+      pollBusy = false;
+    });
+  }
   function watchNew() {
     if (pollTimer || !QBE.api || !QBE.api.url()) return;
-    pollTimer = setInterval(function () {
-      if (document.hidden || busy) return;
-      QBE.api.list({}).then(function (data) {
-        usePack(data, "api", true);
-      }).catch(function () {});
-    }, 45000);
+    pollTimer = setInterval(pollOnce, 8000);
+    document.addEventListener("visibilitychange", function () {
+      if (!document.hidden) pollOnce();
+    });
+    root.addEventListener("focus", pollOnce);
   }
   function boot() {
     QBE.filters.bind(onFilter);
     QBE.table.bind();
     bindNotify();
     if (QBE.audit) QBE.audit.bind();
+    if (root.lucide && typeof root.lucide.createIcons === "function") {
+      root.lucide.createIcons({ attrs: { "stroke-width": 2.4 } });
+    }
     setLoading(false);
     loadRemote();
     watchNew();

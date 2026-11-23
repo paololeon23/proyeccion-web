@@ -76,6 +76,8 @@
       out[cols[i]] = get(rec, cols[i]);
     }
     out.Fecha = asText(out.Fecha);
+    out.Lote = canonLote(out.Lote);
+    if (out.Campaña) out.Campaña = campanaYear(out.Campaña);
     ["N° Muestra", "N° Ramas", "Yema Productiva", "Yema Abierta", "Yemas Cerradas", "Yemas Muertas",
       "Botón Floral", "Flor", "Cuaja", "E1 (Verde)", "E2 (Rosado)", "E3 (Guinda)", "E4 (50%-70%)", "E5 (Maduro)",
       "Turno", "Lotes", "Semana", "Area"].forEach(function (k) {
@@ -83,6 +85,13 @@
     });
     out._q = fold([out.Lote, out.DNI, out.Nombre, out.Modulo, out.Variedad, out.Campaña, out.Etapa].join(" "));
     return out;
+  }
+  function canonLote(raw) {
+    var s = String(raw == null ? "" : raw).trim().toUpperCase().replace(/\s+/g, "");
+    if (!s) return "";
+    var m = s.match(/^M0*(\d+)T0*(\d+)(?:LT|L)0*(\d+)$/i);
+    if (m) return "M" + m[1] + "T" + m[2] + "LT" + m[3];
+    return String(raw == null ? "" : raw).trim();
   }
   function uniqueSorted(list) {
     var seen = {};
@@ -102,18 +111,28 @@
     });
     return out;
   }
+  function campanaYear(v) {
+    var m = String(v || "").match(/(20\d{2}|\d{4})/);
+    return m ? m[1] : String(v || "").trim();
+  }
   function optionsFrom(records) {
     var campanas = [];
     var modulos = [];
     var turnos = [];
     var lotes = [];
     var evaluadores = [];
+    var variedades = [];
+    var etapas = [];
+    var semanas = [];
     (records || []).forEach(function (r) {
-      if (r.Campaña) campanas.push(r.Campaña);
+      if (r.Campaña) campanas.push(campanaYear(r.Campaña));
       if (r.Modulo) modulos.push(r.Modulo);
       if (r.Turno !== "" && r.Turno != null) turnos.push(r.Turno);
       if (r.Lote) lotes.push(r.Lote);
       if (r.Nombre) evaluadores.push(r.Nombre);
+      if (r.Variedad) variedades.push(r.Variedad);
+      if (r.Etapa) etapas.push(r.Etapa);
+      if (r.Semana !== "" && r.Semana != null) semanas.push(r.Semana);
     });
     return {
       campanas: uniqueSorted(campanas),
@@ -121,14 +140,16 @@
       turnos: uniqueSorted(turnos),
       lotes: uniqueSorted(lotes),
       evaluadores: uniqueSorted(evaluadores),
+      variedades: uniqueSorted(variedades),
+      etapas: uniqueSorted(etapas),
+      semanas: uniqueSorted(semanas),
     };
   }
   function matchesFilter(rec, f) {
-    if (f.campana && f.campana !== "*" && String(rec.Campaña) !== String(f.campana)) return false;
     if (f.modulo && f.modulo !== "*" && String(rec.Modulo) !== String(f.modulo)) return false;
-    if (f.turno && f.turno !== "*" && String(rec.Turno) !== String(f.turno)) return false;
-    if (f.lote && f.lote !== "*" && String(rec.Lote) !== String(f.lote)) return false;
     if (f.evaluador && f.evaluador !== "*" && String(rec.Nombre) !== String(f.evaluador)) return false;
+    if (f.etapa && f.etapa !== "*" && String(rec.Etapa) !== String(f.etapa)) return false;
+    if (f.semana && f.semana !== "*" && String(rec.Semana) !== String(f.semana)) return false;
     if (f.desde && rec.Fecha && String(rec.Fecha) < String(f.desde)) return false;
     if (f.hasta && rec.Fecha && String(rec.Fecha) > String(f.hasta)) return false;
     if (f.q) {
@@ -139,18 +160,39 @@
   function filterRecords(records, f) {
     return (records || []).filter(function (r) { return matchesFilter(r, f || {}); });
   }
+  function dateSortKey(v) {
+    var s = String(v == null ? "" : v).trim();
+    var m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return m[1] + m[2] + m[3];
+    m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/);
+    if (m) {
+      var dd = m[1].length < 2 ? "0" + m[1] : m[1];
+      var mm = m[2].length < 2 ? "0" + m[2] : m[2];
+      return m[3] + mm + dd;
+    }
+    return s;
+  }
   function sortRecords(records, key, dir) {
     var d = dir < 0 ? -1 : 1;
     var rows = (records || []).slice();
     rows.sort(function (a, b) {
       var va = a[key];
       var vb = b[key];
+      if (key === "Fecha") {
+        var cmp = dateSortKey(va).localeCompare(dateSortKey(vb));
+        if (cmp) return cmp * d;
+        return Number(a._ord || 0) - Number(b._ord || 0);
+      }
       var na = Number(va);
       var nb = Number(vb);
       if (isFinite(na) && isFinite(nb) && String(va).trim() !== "" && String(vb).trim() !== "") {
-        return (na - nb) * d;
+        var ncmp = (na - nb) * d;
+        if (ncmp) return ncmp;
+        return Number(a._ord || 0) - Number(b._ord || 0);
       }
-      return String(va == null ? "" : va).localeCompare(String(vb == null ? "" : vb), "es") * d;
+      var cmp2 = String(va == null ? "" : va).localeCompare(String(vb == null ? "" : vb), "es") * d;
+      if (cmp2) return cmp2;
+      return Number(a._ord || 0) - Number(b._ord || 0);
     });
     return rows;
   }

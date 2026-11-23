@@ -52,12 +52,38 @@
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;");
   }
+  function fold(s) {
+    return String(s || "").toLowerCase().replace(/\s+/g, " ").trim();
+  }
+  function filtered() {
+    var qEl = document.getElementById("q-audit");
+    var q = fold(qEl && qEl.value);
+    var rows = load();
+    if (!q) return rows;
+    return rows.filter(function (r) {
+      return fold([r.cuando, r.usuario, r.accion, r.detalle].join(" ")).indexOf(q) >= 0;
+    });
+  }
+  function exportRows(asXls) {
+    var list = filtered();
+    var aoa = [["Fecha y hora", "Usuario", "Acción", "Detalle"]].concat(list.map(function (r) {
+      return [r.cuando, r.usuario, r.accion, r.detalle];
+    }));
+    if (asXls && typeof XLSX !== "undefined") {
+      var wb = XLSX.utils.book_new();
+      var ws = XLSX.utils.aoa_to_sheet(aoa);
+      XLSX.utils.book_append_sheet(wb, ws, "Movimientos");
+      XLSX.writeFile(wb, "movimientos-qberries.xlsx");
+    } else if (QBE.perf && QBE.perf.downloadCsv) {
+      QBE.perf.downloadCsv("movimientos-qberries.csv", aoa);
+    }
+  }
   function render() {
     var body = document.getElementById("audit-body");
     var pager = document.getElementById("audit-pager");
     var count = document.getElementById("audit-count");
     if (!body) return;
-    var rows = load();
+    var rows = filtered();
     var pages = Math.max(1, Math.ceil(rows.length / SIZE));
     if (page > pages) page = pages;
     if (page < 1) page = 1;
@@ -79,15 +105,34 @@
   }
   function bind() {
     var pager = document.getElementById("audit-pager");
-    if (!pager || pager.getAttribute("data-bound")) return;
-    pager.setAttribute("data-bound", "1");
-    pager.addEventListener("click", function (e) {
-      var btn = e.target.closest("button");
-      if (!btn) return;
-      page += Number(btn.getAttribute("data-pg") || 0);
-      if (page < 1) page = 1;
-      render();
-    });
+    if (pager && !pager.getAttribute("data-bound")) {
+      pager.setAttribute("data-bound", "1");
+      pager.addEventListener("click", function (e) {
+        var btn = e.target.closest("button");
+        if (!btn) return;
+        page += Number(btn.getAttribute("data-pg") || 0);
+        if (page < 1) page = 1;
+        render();
+      });
+    }
+    var q = document.getElementById("q-audit");
+    if (q && !q._bound) {
+      q._bound = true;
+      q.addEventListener("input", function () {
+        page = 1;
+        render();
+      });
+    }
+    var csv = document.getElementById("btn-audit-csv");
+    var xls = document.getElementById("btn-audit-xls");
+    if (csv && !csv._bound) {
+      csv._bound = true;
+      csv.addEventListener("click", function () { exportRows(false); });
+    }
+    if (xls && !xls._bound) {
+      xls._bound = true;
+      xls.addEventListener("click", function () { exportRows(true); });
+    }
   }
 
   QBE.audit = { add: add, render: render, bind: bind, load: load };

@@ -27,6 +27,24 @@
       if (el) el.textContent = name;
     });
   }
+  function placeFilters(h) {
+    var bar = $("filters-bar");
+    if (!bar) return;
+    var reg = document.querySelector('.page[data-page="registros"]');
+    var esc = document.querySelector('.page[data-page="escaneadas"]');
+    if (h === "#/escaneadas" && esc) {
+      var top = esc.querySelector(".escaneadas-top");
+      if (top) top.insertAdjacentElement("afterend", bar);
+      bar.hidden = false;
+    } else if (h === "#/registros" && reg) {
+      var hero = reg.querySelector(".hero-row");
+      if (hero) hero.insertAdjacentElement("afterend", bar);
+      else reg.insertBefore(bar, reg.firstChild);
+      bar.hidden = false;
+    } else {
+      bar.hidden = true;
+    }
+  }
   function route() {
     var h = String(location.hash || "#/registros");
     if (h === "#/" || h === "#" || h === "#/dashboard") h = "#/registros";
@@ -37,6 +55,7 @@
       var id = "#/" + p.getAttribute("data-page");
       p.classList.toggle("on", id === h);
     });
+    placeFilters(h);
     closeMenu();
     if (h === "#/movimientos" && QBE.audit) {
       QBE.audit.bind();

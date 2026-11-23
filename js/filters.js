@@ -1,4 +1,4 @@
-/* Filtros de proyecciones: campaña, fechas, módulo, turno, lote, evaluador. */
+/* Filtros de proyecciones: campaña, fechas, módulo, evaluador, etapa, semana. */
 (function (root) {
   var QBE = root.QBE || (root.QBE = {});
 
@@ -24,12 +24,12 @@
   }
   function syncPick(el) {
     var field = el.closest ? el.closest(".field") : null;
-    if (!field) return;
+    if (!field || field.classList.contains("field-action")) return;
     var pick = field.querySelector(".pick");
     if (!pick) {
       pick = document.createElement("div");
       pick.className = "pick";
-      pick.innerHTML = '<button type="button" class="pick-btn" aria-haspopup="listbox"></button><div class="pick-menu" hidden role="listbox"></div>';
+      pick.innerHTML = '<button type="button" class="pick-btn" aria-haspopup="listbox" aria-expanded="false"></button><div class="pick-menu" hidden role="listbox"></div>';
       el.classList.add("is-native");
       el.insertAdjacentElement("afterend", pick);
       var btn = pick.querySelector(".pick-btn");
@@ -39,6 +39,7 @@
         ev.stopPropagation();
         var willOpen = menu.hidden;
         document.querySelectorAll(".pick-menu, .cal-pop").forEach(function (m) { m.hidden = true; });
+        document.querySelectorAll(".pick-btn, .cal-btn").forEach(function (b) { b.setAttribute("aria-expanded", "false"); });
         menu.hidden = !willOpen;
         btn.setAttribute("aria-expanded", menu.hidden ? "false" : "true");
       });
@@ -59,8 +60,8 @@
         });
       }
     }
-    var current = el.options[el.selectedIndex];
-    pick.querySelector(".pick-btn").textContent = current ? current.text : "";
+    var currentOpt = el.options[el.selectedIndex];
+    pick.querySelector(".pick-btn").textContent = currentOpt ? currentOpt.text : "";
     var menuEl = pick.querySelector(".pick-menu");
     var html = "";
     Array.prototype.forEach.call(el.options, function (o) {
@@ -76,23 +77,21 @@
   }
   function current() {
     return {
-      campana: val("f-campana") || "*",
       desde: val("f-desde"),
       hasta: val("f-hasta"),
       modulo: val("f-modulo") || "*",
-      turno: val("f-turno") || "*",
-      lote: val("f-lote") || "*",
       evaluador: val("f-evaluador") || "*",
+      etapa: val("f-etapa") || "*",
+      semana: val("f-semana") || "*",
       q: searchValue(),
       colores: !!(document.getElementById("f-colores") && document.getElementById("f-colores").checked),
     };
   }
   function render(options) {
-    fillSelect("f-campana", options.campanas, "Todas");
     fillSelect("f-modulo", options.modulos, "Todos");
-    fillSelect("f-turno", options.turnos, "Todos");
-    fillSelect("f-lote", options.lotes, "Todos");
     fillSelect("f-evaluador", options.evaluadores, "Todos");
+    fillSelect("f-etapa", options.etapas, "Todas");
+    fillSelect("f-semana", options.semanas, "Todas");
   }
   var MESES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
   function pad(n) { return n < 10 ? "0" + n : String(n); }
@@ -105,11 +104,50 @@
     document.querySelectorAll(".cal-pop, .pick-menu").forEach(function (m) { m.hidden = true; });
     document.querySelectorAll(".cal-btn, .pick-btn").forEach(function (b) { b.setAttribute("aria-expanded", "false"); });
   }
+  function setDateValue(id, value) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.value = value || "";
+    var node = el.parentNode && el.parentNode.querySelector(".cal-val");
+    if (!node) return;
+    if (el.value) {
+      node.textContent = formatES(el.value);
+      node.classList.remove("is-empty");
+    } else {
+      node.textContent = "dd/mm/aaaa";
+      node.classList.add("is-empty");
+    }
+  }
+  function todayIso() { return iso(new Date()); }
+  function ensureTodayDates() {
+    var t = todayIso();
+    ["f-desde", "f-hasta"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el && !el.value) el.value = t;
+    });
+  }
+  function clearFilters(onChange) {
+    ["f-modulo", "f-evaluador", "f-etapa", "f-semana"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.value = "*";
+      syncPick(el);
+    });
+    var t = todayIso();
+    setDateValue("f-desde", t);
+    setDateValue("f-hasta", t);
+    ["q", "q-detalle"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.value = "";
+    });
+    if (typeof onChange === "function") onChange();
+  }
   function mountDate(id) {
     var el = document.getElementById(id);
     if (!el || el.dataset.cal) return;
     el.dataset.cal = "1";
     el.classList.add("is-native");
+    if (!el.value) el.value = todayIso();
     var box = document.createElement("div");
     box.className = "cal";
     box.innerHTML = '<button type="button" class="cal-btn" aria-haspopup="dialog" aria-expanded="false"><span class="cal-val is-empty">dd/mm/aaaa</span></button><div class="cal-pop" hidden></div>';
@@ -186,18 +224,29 @@
     label();
   }
   function bind(onChange) {
+    ensureTodayDates();
     mountDate("f-desde");
     mountDate("f-hasta");
     if (!bind.outside) {
       bind.outside = true;
       document.addEventListener("click", closePops);
     }
-    ["f-campana", "f-desde", "f-hasta", "f-modulo", "f-turno", "f-lote", "f-evaluador", "f-colores", "f-gramos", "f-colores-kg"].forEach(function (id) {
+    ["f-desde", "f-hasta", "f-modulo", "f-evaluador", "f-etapa", "f-semana", "f-colores", "f-gramos", "f-colores-kg"].forEach(function (id) {
       var el = document.getElementById(id);
       if (!el) return;
       el.addEventListener("change", onChange);
       if (id === "f-gramos") el.addEventListener("input", QBE.perf.debounce(onChange, 180, "gramos"));
     });
+    var filtrar = document.getElementById("btn-filtrar");
+    if (filtrar && !filtrar._bound) {
+      filtrar._bound = true;
+      filtrar.addEventListener("click", function () { onChange(); });
+    }
+    var limpiar = document.getElementById("btn-limpiar");
+    if (limpiar && !limpiar._bound) {
+      limpiar._bound = true;
+      limpiar.addEventListener("click", function () { clearFilters(onChange); });
+    }
     var q = document.getElementById("q-detalle");
     if (q) {
       q.addEventListener("input", QBE.perf.debounce(function () {

@@ -11,7 +11,7 @@
   }
   function fetchJson(url, timeout) {
     var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
-    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, timeout || 25000);
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, timeout || 20000);
     return fetch(url, { method: "GET", cache: "no-store", signal: ctrl ? ctrl.signal : undefined })
       .then(function (res) {
         return res.text().then(function (t) {
@@ -23,7 +23,7 @@
       })
       .finally(function () { clearTimeout(timer); });
   }
-  function get(action, params) {
+  function get(action, params, timeoutMs) {
     var url = apiUrl();
     if (!url) return Promise.reject({ message: "Falta configurar la URL de la API (meta qberries-api)." });
     if (!online()) return Promise.reject({ message: "Sin conexión." });
@@ -36,21 +36,23 @@
       q.push(encodeURIComponent(key) + "=" + encodeURIComponent(String(params[key])));
     }
     var sep = url.indexOf("?") >= 0 ? "&" : "?";
-    return fetchJson(url + sep + q.join("&"), QBE.config.timeoutMs).then(function (data) {
+    var ms = timeoutMs != null ? timeoutMs : ((QBE.config && QBE.config.timeoutMs) || 20000);
+    return fetchJson(url + sep + q.join("&"), ms).then(function (data) {
       if (!data || data.ok === false) {
         throw { message: (data && (data.message || data.error)) || "La API no devolvió datos." };
       }
       return data;
     });
   }
-  function list(filters) {
-    var params = { limit: 2000 };
+  function list(filters, opts) {
+    opts = opts || {};
+    var params = { limit: opts.limit || 2000 };
     filters = filters || {};
     var key;
     for (key in filters) {
       if (Object.prototype.hasOwnProperty.call(filters, key)) params[key] = filters[key];
     }
-    return get("list", params).then(function (data) {
+    return get("list", params, opts.timeoutMs).then(function (data) {
       var rows = data && (data.records || data.registros);
       if (!data || !Array.isArray(rows)) {
         throw { message: "La hoja Proyecciones no devolvió filas." };

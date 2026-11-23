@@ -42,11 +42,31 @@
   }
   function filtered() {
     var qEl = document.getElementById("q-usuarios");
+    var estadoEl = document.getElementById("f-estado-usuarios");
     var q = fold(qEl && qEl.value);
+    var estado = estadoEl ? String(estadoEl.value || "*") : "*";
     return rows.filter(function (u) {
+      if (estado === "1" && !u.activo) return false;
+      if (estado === "0" && u.activo) return false;
       if (!q) return true;
       return fold(u.nombre + " " + u.dni + " " + u.rol + " " + u.modulo).indexOf(q) >= 0;
     });
+  }
+  function exportRows(asXls) {
+    var list = filtered();
+    var cols = ["DNI", "Usuario", "Rol", "Estado"];
+    var aoa = [cols].concat(list.map(function (u) {
+      return [u.dni, u.nombre, u.rol, u.activo ? "Activo" : "Sin acceso"];
+    }));
+    if (asXls && typeof XLSX !== "undefined") {
+      var wb = XLSX.utils.book_new();
+      var ws = XLSX.utils.aoa_to_sheet(aoa);
+      XLSX.utils.book_append_sheet(wb, ws, "Evaluadores");
+      XLSX.writeFile(wb, "evaluadores-qberries.xlsx");
+    } else if (QBE.perf && QBE.perf.downloadCsv) {
+      QBE.perf.downloadCsv("evaluadores-qberries.csv", aoa);
+    }
+    if (QBE.audit) QBE.audit.add(asXls ? "Exportar Excel usuarios" : "Exportar CSV usuarios", list.length + " evaluadores");
   }
   function render() {
     var body = document.getElementById("users-body");
@@ -96,6 +116,25 @@
     var box = document.getElementById("confirm");
     if (box) box.hidden = true;
   }
+  function showCredModal(next, user) {
+    var box = document.getElementById("cred-modal");
+    var title = document.getElementById("cred-title");
+    var text = document.getElementById("cred-text");
+    var sub = document.getElementById("cred-sub");
+    if (!box) return;
+    if (title) title.textContent = next ? "Activando credenciales" : "Desactivando credenciales";
+    if (text) {
+      text.textContent = next
+        ? "Se están activando las credenciales de acceso…"
+        : "Se están desactivando las credenciales de acceso…";
+    }
+    if (sub) sub.textContent = (user.nombre || "") + (user.dni ? " · DNI " + user.dni : "");
+    box.hidden = false;
+  }
+  function hideCredModal() {
+    var box = document.getElementById("cred-modal");
+    if (box) box.hidden = true;
+  }
   function ask(id) {
     var user = findUser(id);
     var box = document.getElementById("confirm");
@@ -122,24 +161,37 @@
     }
     if (!user || !user.dni) return;
     var next = !user.activo;
+    showCredModal(next, user);
     var done = function () {
       user.activo = next;
       if (QBE.audit) QBE.audit.add(next ? "Activar usuario" : "Desactivar usuario", user.nombre);
+      hideCredModal();
       if (QBE.shell && QBE.shell.toast) QBE.shell.toast(user.nombre + (next ? " · activo" : " · sin acceso"));
       render();
     };
-    if (!QBE.api || !QBE.api.setAcceso) { done(); return; }
+    var fail = function (err) {
+      hideCredModal();
+      if (QBE.shell && QBE.shell.toast) QBE.shell.toast((err && err.message) || "No se guardó el acceso", true);
+    };
+    if (!QBE.api || !QBE.api.setAcceso) {
+      setTimeout(done, 900);
+      return;
+    }
     QBE.api.setAcceso({ dni: user.dni, activo: next, nombre: user.nombre, rol: user.rol, modulo: user.modulo === "—" ? "" : user.modulo })
-      .then(done)
-      .catch(function (err) {
-        if (QBE.shell && QBE.shell.toast) QBE.shell.toast((err && err.message) || "No se guardó el acceso", true);
-      });
+      .then(function () { setTimeout(done, 450); })
+      .catch(fail);
   }
   function bind() {
     if (!bound) {
       bound = true;
       var q = document.getElementById("q-usuarios");
       if (q) q.addEventListener("input", QBE.perf.debounce(function () { page = 1; render(); }, 160, "usersq"));
+      var estado = document.getElementById("f-estado-usuarios");
+      if (estado) estado.addEventListener("change", function () { page = 1; render(); });
+      var csv = document.getElementById("btn-users-csv");
+      var xls = document.getElementById("btn-users-xls");
+      if (csv) csv.addEventListener("click", function () { exportRows(false); });
+      if (xls) xls.addEventListener("click", function () { exportRows(true); });
       var body = document.getElementById("users-body");
       if (body) {
         body.addEventListener("click", function (e) {
