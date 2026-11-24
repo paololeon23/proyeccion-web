@@ -176,14 +176,28 @@
   function refreshTable() {
     refresh();
   }
-  function onFilter() {
+  function onFilter(opts) {
+    opts = opts || {};
+    var withLoader = opts.apply !== false;
     QBE.table.resetPage();
-    refresh();
-    var key = filterLabel();
-    if (key !== lastFilterKey) {
-      lastFilterKey = key;
-      if (QBE.audit) QBE.audit.add("Filtro", key);
+    if (QBE.summary && QBE.summary.resetPage) QBE.summary.resetPage();
+    function run() {
+      refresh();
+      var key = filterLabel();
+      if (key !== lastFilterKey) {
+        lastFilterKey = key;
+        if (QBE.audit) QBE.audit.add(opts.clear ? "Desfiltrar" : "Filtrar", key);
+      }
     }
+    if (!withLoader) {
+      run();
+      return;
+    }
+    setLoading(true, "Cargando datos…");
+    setTimeout(function () {
+      try { run(); }
+      finally { setLoading(false); }
+    }, 180);
   }
   function spinRefresh(on) {
     var btn = $("refresh-btn");
@@ -199,7 +213,7 @@
       spinRefresh(false);
       return Promise.resolve();
     }
-    setLoading(true, "Leyendo Evaluadores y Proyecciones…");
+    setLoading(true, "Cargando datos…");
     paintCloud(35, "Analizando data de campo", false);
     var people = QBE.api.evaluadores().then(function (data) {
       var list = (data && data.evaluadores) || [];

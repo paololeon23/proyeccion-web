@@ -1,4 +1,4 @@
-/* Tabla detallada de proyecciones + paginación + export CSV/XLS. */
+/* Tabla detallada de proyecciones + paginación + export Excel. */
 (function (root) {
   var QBE = root.QBE || (root.QBE = {});
   var state = { key: "Fecha", dir: -1, page: 1, size: (QBE.config && QBE.config.pageSize) || 10 };
@@ -60,6 +60,47 @@
     var box = document.getElementById("detail-modal");
     if (box) box.hidden = true;
   }
+  function rawPhoto(row) {
+    return String((row && (row["Foto cabecera"] || row.Anexo || row.anexo || row.foto || row.Foto)) || "").trim();
+  }
+  function driveId(s) {
+    var m = String(s || "").match(/\/(?:file\/d|d)\/([a-zA-Z0-9_-]+)/) ||
+      String(s || "").match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    return m ? m[1] : "";
+  }
+  function photoUrls(row) {
+    var s = rawPhoto(row);
+    if (!s) return { thumb: "", full: "", open: "" };
+    if (/^data:image\//i.test(s)) return { thumb: s, full: s, open: s };
+    if (/^\/\//.test(s)) s = "https:" + s;
+    var id = driveId(s);
+    if (id) {
+      return {
+        thumb: "https://drive.google.com/thumbnail?id=" + id + "&sz=w800",
+        full: "https://drive.google.com/thumbnail?id=" + id + "&sz=w2000",
+        open: "https://drive.google.com/uc?export=view&id=" + id,
+      };
+    }
+    if (/^https?:\/\//i.test(s)) return { thumb: s, full: s, open: s };
+    return { thumb: "", full: "", open: "" };
+  }
+  function icoExpand() {
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+  function closeLightbox() {
+    var box = document.getElementById("photo-lightbox");
+    if (box) box.hidden = true;
+  }
+  function openLightbox(url, caption) {
+    var box = document.getElementById("photo-lightbox");
+    var img = document.getElementById("photo-lightbox-img");
+    var cap = document.getElementById("photo-lightbox-cap");
+    if (!box || !img || !url) return;
+    img.src = url;
+    img.alt = caption || "Foto completa";
+    if (cap) cap.textContent = caption || "";
+    box.hidden = false;
+  }
   function openDetail(row) {
     var box = document.getElementById("detail-modal");
     var body = document.getElementById("detail-body");
@@ -72,16 +113,40 @@
         .filter(Boolean)
         .join(" · ");
     }
-    var fields = detailFields();
-    var html = '<div class="detail-grid">';
-    fields.forEach(function (key) {
-      var val = row[key];
-      var empty = val === "" || val == null;
-      var cls = key === "Observación" ? "detail-item detail-item-wide" : "detail-item";
-      html += '<div class="' + cls + '"><span class="detail-label">' + esc(key) + '</span>' +
-        '<strong class="detail-value">' + esc(empty ? "—" : val) + "</strong></div>";
+    var foto = photoUrls(row);
+    var html = '<div class="detail-top">';
+    html += '<figure class="detail-photo' + (foto.thumb ? "" : " is-empty") + '">';
+    if (foto.thumb) {
+      html += '<img src="' + esc(foto.thumb) + '" alt="Foto cabecera" loading="lazy" referrerpolicy="no-referrer" data-full="' + esc(foto.full || foto.thumb) + '" />';
+      html += '<button type="button" class="detail-photo-expand" data-act="photo-full" title="Ver completa" aria-label="Ver foto completa">' +
+        icoExpand() + "</button>";
+    } else {
+      html += '<span class="detail-photo-empty">Sin foto</span>';
+    }
+    html += "</figure>";
+    html += '<div class="detail-top-main">';
+    html += '<div class="detail-trio" role="group" aria-label="Ubicación de campo">';
+    [
+      { key: "Módulo", val: row.Modulo },
+      { key: "Turno", val: row.Turno },
+      { key: "Lote", val: row.Lote },
+    ].forEach(function (item) {
+      html += '<div class="detail-trio-item"><span class="detail-label">' + esc(item.key) + "</span>" +
+        '<strong class="detail-value">' + esc(item.val === "" || item.val == null ? "—" : item.val) + "</strong></div>";
     });
     html += "</div>";
+    html += '<div class="detail-grid detail-grid-compact">';
+    detailFields().forEach(function (key) {
+      if (key === "Observación") return;
+      var val = row[key];
+      var empty = val === "" || val == null;
+      html += '<div class="detail-item"><span class="detail-label">' + esc(key) + "</span>" +
+        '<strong class="detail-value">' + esc(empty ? "—" : val) + "</strong></div>";
+    });
+    html += "</div></div></div>";
+    var obs = row["Observación"];
+    html += '<div class="detail-item detail-item-wide detail-obs"><span class="detail-label">Observación</span>' +
+      '<strong class="detail-value">' + esc(obs === "" || obs == null ? "—" : obs) + "</strong></div>";
     var fen = ["N° Muestra", "N° Ramas", "Yema Productiva", "Yema Abierta", "Yemas Cerradas", "Yemas Muertas",
       "Botón Floral", "Flor", "Cuaja", "E1 (Verde)", "E2 (Rosado)", "E3 (Guinda)", "E4 (50%-70%)", "E5 (Maduro)"];
     html += '<div class="detail-fen"><h3>Conteo fenológico</h3><div class="detail-fen-grid">';
@@ -90,6 +155,27 @@
     });
     html += "</div></div>";
     body.innerHTML = html;
+    var fig = body.querySelector(".detail-photo");
+    var img = fig && fig.querySelector("img");
+    if (img) {
+      img.addEventListener("error", function () {
+        if (foto.open && img.src !== foto.open) {
+          img.src = foto.open;
+          return;
+        }
+        if (!fig) return;
+        fig.classList.add("is-empty");
+        fig.innerHTML = '<span class="detail-photo-empty">Sin foto</span>';
+      });
+    }
+    var expand = body.querySelector("[data-act='photo-full']");
+    if (expand) {
+      expand.addEventListener("click", function (ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        openLightbox(foto.full || foto.open || foto.thumb, row.Lote || "Foto cabecera");
+      });
+    }
     box.hidden = false;
   }
   function render(rows, opts) {
@@ -159,22 +245,16 @@
     state._rows = sorted;
     state._pages = pages;
   }
-  function exportCsv() {
-    var rows = state._rows || [];
-    var columns = cols();
-    var aoa = [columns].concat(rows.map(function (r) {
-      return columns.map(function (c) { return r[c] == null ? "" : r[c]; });
-    }));
-    if (QBE.perf && QBE.perf.downloadCsv) QBE.perf.downloadCsv("proyecciones-qberries.csv", aoa);
-    if (QBE.audit) QBE.audit.add("Exportar CSV", rows.length + " registros");
-  }
   function exportXls() {
     var rows = state._rows || [];
     var columns = cols();
-    if (typeof XLSX === "undefined") return exportCsv();
+    if (typeof XLSX === "undefined") return;
     var aoa = [columns];
     rows.forEach(function (r) {
-      aoa.push(columns.map(function (c) { return r[c]; }));
+      aoa.push(columns.map(function (c) {
+        if (c === "Anexo") return r.Anexo || r["Foto cabecera"] || "";
+        return r[c] == null ? "" : r[c];
+      }));
     });
     var wb = XLSX.utils.book_new();
     var ws = XLSX.utils.aoa_to_sheet(aoa);
@@ -236,13 +316,24 @@
       detail.addEventListener("click", function (e) {
         if (e.target === detail || e.target.closest("[data-detail-close]")) closeDetail();
       });
-      document.addEventListener("keydown", function (e) {
-        if (e.key === "Escape") closeDetail();
+    }
+    var light = document.getElementById("photo-lightbox");
+    if (light && !light._bound) {
+      light._bound = true;
+      light.addEventListener("click", function (e) {
+        if (e.target === light || e.target.closest("[data-light-close]")) closeLightbox();
       });
     }
-    var csv = document.getElementById("btn-csv");
+    if (!bind._esc) {
+      bind._esc = true;
+      document.addEventListener("keydown", function (e) {
+        if (e.key !== "Escape") return;
+        var lightBox = document.getElementById("photo-lightbox");
+        if (lightBox && !lightBox.hidden) { closeLightbox(); return; }
+        closeDetail();
+      });
+    }
     var xls = document.getElementById("btn-xls");
-    if (csv && !csv._bound) { csv._bound = true; csv.addEventListener("click", exportCsv); }
     if (xls && !xls._bound) { xls._bound = true; xls.addEventListener("click", exportXls); }
   }
   function resetPage() { state.page = 1; }

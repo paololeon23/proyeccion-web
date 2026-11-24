@@ -51,7 +51,9 @@
       "E4 (50%-70%)": ["e4", "E4"],
       "E5 (Maduro)": ["e5", "E5"],
       Observación: ["observacion", "Observacion"],
-      "Foto cabecera": ["foto", "Foto cabeza", "fotoCabecera"],
+      "Foto cabecera": ["foto", "Foto cabeza", "fotoCabecera", "Anexo", "anexo", "fotoUrl", "imagen"],
+      Anexo: ["anexo", "Foto cabecera", "foto", "fotoCabecera"],
+      "Hora subida": ["horaSubida", "hora_subida", "Hora Subida"],
       Modulo: ["modulo", "Módulo", "Nódulo", "Nodulo"],
       Turno: ["turno"],
       Lotes: ["lotes", "loteNum"],
@@ -78,6 +80,9 @@
     out.Fecha = asText(out.Fecha);
     out.Lote = canonLote(out.Lote);
     if (out.Campaña) out.Campaña = campanaYear(out.Campaña);
+    out.Anexo = String(get(rec, "Anexo") || rec.Anexo || rec.anexo || "").trim();
+    out["Hora subida"] = asText(get(rec, "Hora subida") || "");
+    out["Foto cabecera"] = out.Anexo || String(get(rec, "Foto cabecera") || rec.foto || rec.Foto || "").trim();
     ["N° Muestra", "N° Ramas", "Yema Productiva", "Yema Abierta", "Yemas Cerradas", "Yemas Muertas",
       "Botón Floral", "Flor", "Cuaja", "E1 (Verde)", "E2 (Rosado)", "E3 (Guinda)", "E4 (50%-70%)", "E5 (Maduro)",
       "Turno", "Lotes", "Semana", "Area"].forEach(function (k) {
@@ -145,13 +150,22 @@
       semanas: uniqueSorted(semanas),
     };
   }
+  function canonModulo(v) {
+    var s = String(v == null ? "" : v).trim().toUpperCase();
+    var m = s.match(/^M0*(\d+)$/i);
+    return m ? "M" + m[1] : s;
+  }
   function matchesFilter(rec, f) {
-    if (f.modulo && f.modulo !== "*" && String(rec.Modulo) !== String(f.modulo)) return false;
-    if (f.evaluador && f.evaluador !== "*" && String(rec.Nombre) !== String(f.evaluador)) return false;
-    if (f.etapa && f.etapa !== "*" && String(rec.Etapa) !== String(f.etapa)) return false;
+    if (f.modulo && f.modulo !== "*" && canonModulo(rec.Modulo) !== canonModulo(f.modulo)) return false;
+    if (f.evaluador && f.evaluador !== "*" && fold(rec.Nombre) !== fold(f.evaluador)) return false;
+    if (f.etapa && f.etapa !== "*" && fold(rec.Etapa) !== fold(f.etapa)) return false;
     if (f.semana && f.semana !== "*" && String(rec.Semana) !== String(f.semana)) return false;
-    if (f.desde && rec.Fecha && String(rec.Fecha) < String(f.desde)) return false;
-    if (f.hasta && rec.Fecha && String(rec.Fecha) > String(f.hasta)) return false;
+    if (f.desde) {
+      if (!rec.Fecha || dateSortKey(rec.Fecha) < dateSortKey(f.desde)) return false;
+    }
+    if (f.hasta) {
+      if (!rec.Fecha || dateSortKey(rec.Fecha) > dateSortKey(f.hasta)) return false;
+    }
     if (f.q) {
       if ((rec._q || fold([rec.Lote, rec.DNI, rec.Nombre].join(" "))).indexOf(fold(f.q)) < 0) return false;
     }

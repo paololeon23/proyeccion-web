@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="css/styles.css?v=proy14" />
     <link rel="stylesheet" href="css/dashboard.css?v=proy14" />
     <link rel="stylesheet" href="css/responsive.css?v=proy14" />
-    <link rel="stylesheet" href="css/proy.css?v=proy45" />
+    <link rel="stylesheet" href="css/proy.css?v=proy52" />
   </head>
   <body>
     <div id="backdrop" class="backdrop"></div>
@@ -128,17 +128,17 @@
           </div>
           <header class="dash-head" id="filters-bar">
             <div class="filters">
-              <label class="field"><span>Desde</span><input id="f-desde" type="date" aria-label="Fecha desde" /></label>
-              <label class="field"><span>Hasta</span><input id="f-hasta" type="date" aria-label="Fecha hasta" /></label>
               <label class="field"><span>Módulo</span><select id="f-modulo" aria-label="Módulo"></select></label>
               <label class="field field-evaluador"><span>Evaluador</span><select id="f-evaluador" aria-label="Evaluador"></select></label>
+              <label class="field"><span>Desde</span><input id="f-desde" type="date" aria-label="Fecha desde" /></label>
+              <label class="field"><span>Hasta</span><input id="f-hasta" type="date" aria-label="Fecha hasta" /></label>
               <label class="field"><span>Etapa</span><select id="f-etapa" aria-label="Etapa"></select></label>
               <label class="field"><span>Semana</span><select id="f-semana" aria-label="Semana"></select></label>
               <div class="field field-action">
                 <span>Acción</span>
                 <div class="filter-actions">
                   <button type="button" class="filter-btn" id="btn-filtrar">Filtrar</button>
-                  <button type="button" class="filter-clear" id="btn-limpiar" aria-label="Limpiar filtros" title="Limpiar filtros">
+                  <button type="button" class="filter-clear" id="btn-limpiar" aria-label="Desfiltrar" title="Desfiltrar">
                     <i data-lucide="filter-x" aria-hidden="true"></i>
                   </button>
                 </div>
@@ -151,7 +151,6 @@
               <h2>Registros · General</h2>
               <div class="table-tools">
                 <input id="q-detalle" type="search" placeholder="Buscar lote, evaluador…" />
-                <button type="button" class="ghost-btn" id="btn-csv">CSV</button>
                 <button type="button" class="ghost-btn" id="btn-xls">Excel</button>
               </div>
             </div>
@@ -172,19 +171,14 @@
           <div class="escaneadas-top">
             <div class="page-title">
               <h1>Plantas escaneadas</h1>
-              <p id="escaneadas-chip">Resumen en KG con los filtros de la planilla.</p>
-            </div>
-            <div class="gramos-box">
-              <label class="gramos-label" for="f-gramos">Ingresa los gramos</label>
-              <input id="f-gramos" type="number" min="0.01" step="0.01" value="3.50" aria-label="Peso baya en gramos" />
+              <p id="escaneadas-chip">Filtros: Módulo · Evaluador · Fechas.</p>
             </div>
           </div>
 
           <section class="table-panel table-panel-lg resumen-kg">
             <div class="table-head">
-              <h2>Tabla resumen · KG</h2>
+              <h2>Tabla resumen</h2>
               <div class="table-tools">
-                <button type="button" class="ghost-btn" id="btn-kg-csv">CSV</button>
                 <button type="button" class="ghost-btn" id="btn-kg-xls">Excel</button>
               </div>
             </div>
@@ -216,7 +210,6 @@
                   <option value="0">Sin acceso</option>
                 </select>
                 <input id="q-usuarios" type="search" placeholder="Buscar DNI o nombre…" />
-                <button type="button" class="ghost-btn" id="btn-users-csv">CSV</button>
                 <button type="button" class="ghost-btn" id="btn-users-xls">Excel</button>
               </div>
             </div>
@@ -249,7 +242,6 @@
               <div class="table-tools">
                 <input id="q-audit" type="search" placeholder="Buscar movimiento…" />
                 <span id="audit-count"></span>
-                <button type="button" class="ghost-btn" id="btn-audit-csv">CSV</button>
                 <button type="button" class="ghost-btn" id="btn-audit-xls">Excel</button>
               </div>
             </div>
@@ -310,6 +302,11 @@
         </footer>
       </div>
     </div>
+    <div id="photo-lightbox" class="photo-lightbox" hidden>
+      <button type="button" class="photo-lightbox-close" data-light-close aria-label="Cerrar foto">×</button>
+      <img id="photo-lightbox-img" alt="Foto completa" />
+      <p id="photo-lightbox-cap" class="photo-lightbox-cap"></p>
+    </div>
     <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
     <div id="loading" class="loading" hidden>
       <div class="loading-card"><span class="spin"></span><span id="loading-text">Cargando…</span></div>
@@ -317,16 +314,16 @@
 
     <script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="js/config.js?v=proy45"></script>
+    <script src="js/config.js?v=proy48"></script>
     <script src="js/performance.js?v=proy43"></script>
-    <script src="js/audit.js?v=proy43"></script>
-    <script src="js/data.js?v=proy42"></script>
-    <script src="js/filters.js?v=proy42"></script>
-    <script src="js/table.js?v=proy45"></script>
-    <script src="js/summary.js?v=proy43"></script>
-    <script src="js/users.js?v=proy44"></script>
+    <script src="js/audit.js?v=proy48"></script>
+    <script src="js/data.js?v=proy49"></script>
+    <script src="js/filters.js?v=proy50"></script>
+    <script src="js/table.js?v=proy48"></script>
+    <script src="js/summary.js?v=proy51"></script>
+    <script src="js/users.js?v=proy48"></script>
     <script src="js/api.js?v=proy45"></script>
-    <script src="js/app.js?v=proy45"></script>
+    <script src="js/app.js?v=proy49"></script>
     <script src="js/auth.js?v=proy14"></script>
     <script src="js/shell.js?v=proy28"></script>
   </body>

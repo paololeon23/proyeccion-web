@@ -54,8 +54,12 @@
       "Variedad",
       "Area",
       "Campaña",
+      "Anexo",
+      "Hora subida",
     ],
     tableHide: [
+      "Anexo",
+      "Hora subida",
       "Observación",
       "Modulo",
       "Turno",
@@ -67,14 +71,12 @@
       "Campaña",
     ],
     detailFields: [
-      "Modulo",
-      "Turno",
-      "Lotes",
       "Semana",
       "Etapa",
       "Variedad",
       "Area",
       "Campaña",
+      "Lotes",
       "Observación",
     ],
   };

@@ -52,21 +52,18 @@
       return fold(u.nombre + " " + u.dni + " " + u.rol + " " + u.modulo).indexOf(q) >= 0;
     });
   }
-  function exportRows(asXls) {
+  function exportRows() {
     var list = filtered();
+    if (typeof XLSX === "undefined") return;
     var cols = ["DNI", "Usuario", "Rol", "Estado"];
     var aoa = [cols].concat(list.map(function (u) {
       return [u.dni, u.nombre, u.rol, u.activo ? "Activo" : "Sin acceso"];
     }));
-    if (asXls && typeof XLSX !== "undefined") {
-      var wb = XLSX.utils.book_new();
-      var ws = XLSX.utils.aoa_to_sheet(aoa);
-      XLSX.utils.book_append_sheet(wb, ws, "Evaluadores");
-      XLSX.writeFile(wb, "evaluadores-qberries.xlsx");
-    } else if (QBE.perf && QBE.perf.downloadCsv) {
-      QBE.perf.downloadCsv("evaluadores-qberries.csv", aoa);
-    }
-    if (QBE.audit) QBE.audit.add(asXls ? "Exportar Excel usuarios" : "Exportar CSV usuarios", list.length + " evaluadores");
+    var wb = XLSX.utils.book_new();
+    var ws = XLSX.utils.aoa_to_sheet(aoa);
+    XLSX.utils.book_append_sheet(wb, ws, "Evaluadores");
+    XLSX.writeFile(wb, "evaluadores-qberries.xlsx");
+    if (QBE.audit) QBE.audit.add("Exportar Excel usuarios", list.length + " evaluadores");
   }
   function render() {
     var body = document.getElementById("users-body");
@@ -188,10 +185,8 @@
       if (q) q.addEventListener("input", QBE.perf.debounce(function () { page = 1; render(); }, 160, "usersq"));
       var estado = document.getElementById("f-estado-usuarios");
       if (estado) estado.addEventListener("change", function () { page = 1; render(); });
-      var csv = document.getElementById("btn-users-csv");
       var xls = document.getElementById("btn-users-xls");
-      if (csv) csv.addEventListener("click", function () { exportRows(false); });
-      if (xls) xls.addEventListener("click", function () { exportRows(true); });
+      if (xls) xls.addEventListener("click", exportRows);
       var body = document.getElementById("users-body");
       if (body) {
         body.addEventListener("click", function (e) {

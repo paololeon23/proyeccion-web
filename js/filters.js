@@ -140,6 +140,8 @@
       var el = document.getElementById(id);
       if (el) el.value = "";
     });
+    var colores = document.getElementById("f-colores");
+    if (colores) colores.checked = false;
     if (typeof onChange === "function") onChange();
   }
   function mountDate(id) {
@@ -231,31 +233,37 @@
       bind.outside = true;
       document.addEventListener("click", closePops);
     }
-    ["f-desde", "f-hasta", "f-modulo", "f-evaluador", "f-etapa", "f-semana", "f-colores", "f-gramos", "f-colores-kg"].forEach(function (id) {
+    // Colores de calor: live. Gramos ya no se usan en el resumen.
+    ["f-colores", "f-colores-kg"].forEach(function (id) {
       var el = document.getElementById(id);
       if (!el) return;
       el.addEventListener("change", onChange);
-      if (id === "f-gramos") el.addEventListener("input", QBE.perf.debounce(onChange, 180, "gramos"));
     });
     var filtrar = document.getElementById("btn-filtrar");
     if (filtrar && !filtrar._bound) {
       filtrar._bound = true;
-      filtrar.addEventListener("click", function () { onChange(); });
+      filtrar.addEventListener("click", function () {
+        if (typeof onChange === "function") onChange({ apply: true });
+      });
     }
     var limpiar = document.getElementById("btn-limpiar");
     if (limpiar && !limpiar._bound) {
       limpiar._bound = true;
-      limpiar.addEventListener("click", function () { clearFilters(onChange); });
+      limpiar.addEventListener("click", function () {
+        clearFilters(function () {
+          if (typeof onChange === "function") onChange({ apply: true, clear: true });
+        });
+      });
     }
     var q = document.getElementById("q-detalle");
     if (q) {
       q.addEventListener("input", QBE.perf.debounce(function () {
         var top = document.getElementById("q");
         if (top) top.value = q.value;
-        onChange();
+        if (typeof onChange === "function") onChange({ apply: true });
       }, 180, "search"));
     }
   }
 
-  QBE.filters = { current: current, render: render, bind: bind };
+  QBE.filters = { current: current, render: render, bind: bind, clearFilters: clearFilters };
 })(typeof window !== "undefined" ? window : globalThis);
