@@ -798,19 +798,53 @@ table.he tr.row-campo .campo-meta {
   font-weight: 700;
   color: #7a8794;
 }
+table.he tr.row-turno {
+  cursor: pointer;
+  user-select: none;
+}
+table.he tr.row-turno td {
+  background: #eef5e8 !important;
+  color: #2f5d22;
+  font-weight: 800;
+}
+table.he tr.row-turno:hover td { background: #e4eedc !important; }
+table.he tr.row-turno td.turno-cell {
+  text-align: left !important;
+  padding-left: 28px;
+  white-space: nowrap;
+}
+table.he tr.row-turno .turno-toggle {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-right: 8px;
+  vertical-align: middle;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 7px solid #2f5d22;
+  transition: transform .15s ease;
+}
+table.he tr.row-turno.is-collapsed .turno-toggle {
+  transform: rotate(-90deg);
+}
+table.he tr.row-turno.is-open .turno-toggle {
+  transform: rotate(0deg);
+}
+table.he tr.row-turno .turno-name {
+  font-weight: 900;
+  margin-right: 8px;
+}
+table.he tr.row-turno .turno-meta {
+  font-size: 12px;
+  font-weight: 700;
+  color: #7a8794;
+}
+table.he tr.row-turno[hidden],
 table.he tr.row-lote[hidden] { display: none; }
 table.he tr.row-lote td.lote-cell {
   text-align: left !important;
-  padding-left: 18px;
+  padding-left: 52px;
   white-space: nowrap;
-}
-table.he tr.row-lote .lote-turno {
-  display: inline-block;
-  min-width: 2rem;
-  margin-right: 10px;
-  color: #8b93a0;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
 }
 table.he tr.row-lote .lote-name {
   font-weight: 800;

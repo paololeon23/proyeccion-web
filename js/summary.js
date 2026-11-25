@@ -1,7 +1,8 @@
 /* Plantas escaneadas — misma lógica del app:
  * lote = promedio de la última cartilla;
- * módulo / total = promedio ponderado por muestras;
+ * módulo / turno / total = promedio ponderado por muestras;
  * Total columna = E1+E2+E3+E4+E5.
+ * Despliegue: Módulo → Turno → Lote (como app Campo).
  */
 (function (root) {
   var QBE = root.QBE || (root.QBE = {});
@@ -52,6 +53,25 @@
     var t = r.Turno;
     if (t === "" || t == null) return "—";
     return String(t);
+  }
+  function turnoLabel(t) {
+    if (t === "—" || t == null || t === "") return "T—";
+    return "T" + t;
+  }
+  /** M01T01L3 / M1T1LT3 / Lotes=3 → "Lote 3" */
+  function loteDisplayName(r) {
+    var n = String(r && r.Lotes != null ? r.Lotes : "").replace(/\D/g, "");
+    if (!n) {
+      var raw = String((r && r.Lote) || "").trim();
+      var m = raw.match(/(?:LT|L)0*(\d+)\s*$/i);
+      if (m) n = String(Number(m[1]));
+      else if (/^\d+$/.test(raw)) n = String(Number(raw));
+    } else {
+      n = String(Number(n));
+    }
+    if (n && isFinite(Number(n))) return "Lote " + n;
+    var fallback = String((r && r.Lote) || "").trim();
+    return fallback || "Sin lote";
   }
   function zeros() {
     var o = {};
@@ -130,7 +150,7 @@
         byLote[lk] = {
           campo: campoOf(r),
           turno: turnoOf(r),
-          name: String(r.Lote || "Sin lote").trim() || "Sin lote",
+          name: loteDisplayName(r),
           samples: [],
         };
       }
@@ -153,22 +173,43 @@
     var byCampo = {};
     lots.forEach(function (lot) {
       if (!byCampo[lot.campo]) {
-        byCampo[lot.campo] = { name: lot.campo, lots: [], samples: [], muestras: 0, lotCount: 0 };
+        byCampo[lot.campo] = { name: lot.campo, turnos: {}, samples: [], muestras: 0, lotCount: 0 };
       }
       var g = byCampo[lot.campo];
-      g.lots.push(lot);
-      g.lotCount += 1;
-      lot.samples.forEach(function (s) { g.samples.push(s); });
+      if (!g.turnos[lot.turno]) {
+        g.turnos[lot.turno] = {
+          campo: lot.campo,
+          turno: lot.turno,
+          label: turnoLabel(lot.turno),
+          lots: [],
+          samples: [],
+          muestras: 0,
+          lotCount: 0,
+        };
+      }
+      var tg = g.turnos[lot.turno];
+      tg.lots.push(lot);
+      tg.lotCount += 1;
+      lot.samples.forEach(function (s) {
+        tg.samples.push(s);
+        g.samples.push(s);
+      });
+      tg.muestras += lot.muestras;
       g.muestras += lot.muestras;
+      g.lotCount += 1;
     });
 
     var groups = Object.keys(byCampo).sort().map(function (k) {
       var g = byCampo[k];
-      g.lots.sort(function (a, b) {
-        var t = sortTurno(a.turno, b.turno);
-        if (t) return t;
-        return String(a.name).localeCompare(String(b.name), "es");
+      g.turnosList = Object.keys(g.turnos).sort(sortTurno).map(function (tk) {
+        var tg = g.turnos[tk];
+        tg.lots.sort(function (a, b) {
+          return String(a.name).localeCompare(String(b.name), "es");
+        });
+        tg.avg = avgFromSamples(tg.samples);
+        return tg;
       });
+      g.turnoCount = g.turnosList.length;
       g.avg = avgFromSamples(g.samples);
       return g;
     });
@@ -191,9 +232,15 @@
       return '<td class="num' + heat(n, on) + '">' + fmt(n) + "</td>";
     }).join("") + '<td class="num">' + fmt(totalE(vals)) + "</td>";
   }
-  function metaText(lotes, muestras) {
-    var l = Number(lotes) || 0;
-    var m = Number(muestras) || 0;
+  function metaCampo(group) {
+    var l = Number(group.lotCount) || 0;
+    var t = Number(group.turnoCount) || 0;
+    var m = Number(group.muestras) || 0;
+    return l + " lote" + (l === 1 ? "" : "s") + " · " + t + " turno" + (t === 1 ? "" : "s") + " · " + m + " mues.";
+  }
+  function metaTurno(tg) {
+    var l = Number(tg.lotCount) || 0;
+    var m = Number(tg.muestras) || 0;
     return l + " lote" + (l === 1 ? "" : "s") + " · " + m + " mues.";
   }
   function campoRow(group) {
@@ -203,17 +250,31 @@
     var first =
       '<span class="campo-toggle" aria-hidden="true"></span>' +
       '<span class="campo-name">' + esc(group.name) + "</span>" +
-      '<span class="campo-meta">' + esc(metaText(group.lotCount, group.muestras)) + "</span>";
+      '<span class="campo-meta">' + esc(metaCampo(group)) + "</span>";
     return '<tr class="' + cls + '" data-campo-key="' + esc(key) + '" role="button" tabindex="0" aria-expanded="' +
       (closed ? "false" : "true") + '"><td class="campo-cell">' + first + "</td>" + cellsHtml(group.avg, false) + "</tr>";
   }
-  function loteRow(lot, campoKey) {
-    var closed = !!collapsed[campoKey];
-    var turnoLabel = lot.turno === "—" || lot.turno == null || lot.turno === "" ? "T—" : ("T" + lot.turno);
+  function turnoRow(tg, campoKey) {
+    var tKey = campoKey + "|" + tg.turno;
+    var campoClosed = !!collapsed[campoKey];
+    var turnoClosed = !!collapsedTurno[tKey];
+    var cls = "row-turno" + (turnoClosed ? " is-collapsed" : " is-open");
     var first =
-      '<span class="lote-turno">' + esc(turnoLabel) + "</span>" +
-      '<span class="lote-name">' + esc(lot.name) + "</span>";
-    return '<tr class="row-lote" data-parent-campo="' + esc(campoKey) + '"' + (closed ? " hidden" : "") +
+      '<span class="turno-toggle" aria-hidden="true"></span>' +
+      '<span class="turno-name">' + esc(tg.label) + "</span>" +
+      '<span class="turno-meta">' + esc(metaTurno(tg)) + "</span>";
+    return '<tr class="' + cls + '" data-campo-key="' + esc(campoKey) + '" data-turno-key="' + esc(tKey) +
+      '" role="button" tabindex="0" aria-expanded="' + (turnoClosed ? "false" : "true") + '"' +
+      (campoClosed ? " hidden" : "") +
+      '><td class="turno-cell">' + first + "</td>" + cellsHtml(tg.avg, false) + "</tr>";
+  }
+  function loteRow(lot, campoKey, turnoKey) {
+    var campoClosed = !!collapsed[campoKey];
+    var turnoClosed = !!collapsedTurno[turnoKey];
+    var hide = campoClosed || turnoClosed;
+    var first = '<span class="lote-name">' + esc(lot.name) + "</span>";
+    return '<tr class="row-lote" data-parent-campo="' + esc(campoKey) + '" data-parent-turno="' + esc(turnoKey) + '"' +
+      (hide ? " hidden" : "") +
       '><td class="lote-cell">' + first + "</td>" + cellsHtml(lot.avg, false) + "</tr>";
   }
   function totalRow(vals) {
@@ -227,6 +288,7 @@
   var toggleBound = false;
   var lastAgg = null;
   var collapsed = {};
+  var collapsedTurno = {};
 
   function paintPager(pager, pages) {
     if (!pager) return;
@@ -267,14 +329,19 @@
   function exportRows() {
     var agg = lastAgg;
     if (!agg || typeof XLSX === "undefined") return;
-    var cols = ["Campo / Lote"].concat(STAGES.map(function (st) { return st.label; })).concat(["Total"]);
+    var cols = ["Campo / Turno / Lote"].concat(STAGES.map(function (st) { return st.label; })).concat(["Total"]);
     var aoa = [cols];
     agg.groups.forEach(function (g) {
       aoa.push([g.name].concat(STAGES.map(function (st) { return Number((g.avg[st.key] || 0).toFixed(2)); })).concat([Number(totalE(g.avg).toFixed(2))]));
-      (g.lots || []).forEach(function (lot) {
-        aoa.push([("T" + lot.turno + " · " + lot.name)].concat(STAGES.map(function (st) {
-          return Number((lot.avg[st.key] || 0).toFixed(2));
-        })).concat([Number(totalE(lot.avg).toFixed(2))]));
+      (g.turnosList || []).forEach(function (tg) {
+        aoa.push([("  " + tg.label)].concat(STAGES.map(function (st) {
+          return Number((tg.avg[st.key] || 0).toFixed(2));
+        })).concat([Number(totalE(tg.avg).toFixed(2))]));
+        (tg.lots || []).forEach(function (lot) {
+          aoa.push([("    " + lot.name)].concat(STAGES.map(function (st) {
+            return Number((lot.avg[st.key] || 0).toFixed(2));
+          })).concat([Number(totalE(lot.avg).toFixed(2))]));
+        });
       });
     });
     aoa.push(["Total"].concat(STAGES.map(function (st) { return Number((agg.grand[st.key] || 0).toFixed(2)); })).concat([Number(totalE(agg.grand).toFixed(2))]));
@@ -292,10 +359,35 @@
   }
   function applyCampoCollapse(body, key, hide) {
     if (!body) return;
-    body.querySelectorAll('tr.row-lote[data-parent-campo="' + key + '"]').forEach(function (tr) {
+    body.querySelectorAll('tr.row-turno[data-campo-key="' + key + '"]').forEach(function (tr) {
       tr.hidden = !!hide;
+      if (hide) return;
+      var tKey = tr.getAttribute("data-turno-key");
+      var turnoHide = !!collapsedTurno[tKey];
+      tr.classList.toggle("is-collapsed", turnoHide);
+      tr.classList.toggle("is-open", !turnoHide);
+      body.querySelectorAll('tr.row-lote[data-parent-turno="' + tKey + '"]').forEach(function (lot) {
+        lot.hidden = turnoHide;
+      });
     });
+    if (hide) {
+      body.querySelectorAll('tr.row-lote[data-parent-campo="' + key + '"]').forEach(function (tr) {
+        tr.hidden = true;
+      });
+    }
     var head = body.querySelector('tr.row-campo[data-campo-key="' + key + '"]');
+    if (!head) return;
+    head.classList.toggle("is-collapsed", !!hide);
+    head.classList.toggle("is-open", !hide);
+    head.setAttribute("aria-expanded", hide ? "false" : "true");
+  }
+  function applyTurnoCollapse(body, tKey, hide) {
+    if (!body || !tKey) return;
+    body.querySelectorAll('tr.row-lote[data-parent-turno="' + tKey + '"]').forEach(function (tr) {
+      var campoKey = tr.getAttribute("data-parent-campo");
+      tr.hidden = !!hide || !!collapsed[campoKey];
+    });
+    var head = body.querySelector('tr.row-turno[data-turno-key="' + tKey + '"]');
     if (!head) return;
     head.classList.toggle("is-collapsed", !!hide);
     head.classList.toggle("is-open", !hide);
@@ -306,6 +398,16 @@
     if (!body || toggleBound) return;
     toggleBound = true;
     body.addEventListener("click", function (e) {
+      var turnoTr = e.target.closest("tr.row-turno");
+      if (turnoTr && body.contains(turnoTr)) {
+        var tKey = turnoTr.getAttribute("data-turno-key");
+        if (!tKey) return;
+        var hideT = !collapsedTurno[tKey];
+        if (hideT) collapsedTurno[tKey] = 1;
+        else delete collapsedTurno[tKey];
+        applyTurnoCollapse(body, tKey, hideT);
+        return;
+      }
       var tr = e.target.closest("tr.row-campo");
       if (!tr || !body.contains(tr)) return;
       var key = tr.getAttribute("data-campo-key");
@@ -317,7 +419,7 @@
     });
     body.addEventListener("keydown", function (e) {
       if (e.key !== "Enter" && e.key !== " ") return;
-      var tr = e.target.closest("tr.row-campo");
+      var tr = e.target.closest("tr.row-campo, tr.row-turno");
       if (!tr || !body.contains(tr)) return;
       e.preventDefault();
       tr.click();
@@ -353,20 +455,20 @@
     var from = (page - 1) * pageSize;
     var slice = groups.slice(from, from + pageSize);
     var html = "";
-    var lotTotal = 0;
-    var muesTotal = 0;
     slice.forEach(function (group) {
-      lotTotal += group.lotCount;
-      muesTotal += group.muestras;
       html += campoRow(group);
-      (group.lots || []).forEach(function (lot) {
-        html += loteRow(lot, group.name);
+      (group.turnosList || []).forEach(function (tg) {
+        var tKey = group.name + "|" + tg.turno;
+        html += turnoRow(tg, group.name);
+        (tg.lots || []).forEach(function (lot) {
+          html += loteRow(lot, group.name, tKey);
+        });
       });
     });
     html += totalRow(agg.grand);
     body.innerHTML = html;
     if (count) {
-      count.innerHTML = "<strong>" + agg.lotCount + " lotes · " + agg.muestras + " muestras</strong><span>toca un módulo · Total " + fmt(totalE(agg.grand)) + "</span>";
+      count.innerHTML = "<strong>" + agg.lotCount + " lotes · " + agg.muestras + " muestras</strong><span>módulo → turno → lote · Total " + fmt(totalE(agg.grand)) + "</span>";
     }
     if (pager) pager.setAttribute("data-pages", String(pages));
     paintPager(pager, pages);
