@@ -279,8 +279,9 @@ function ensureChildFolder_(parent, name) {
   return parent.createFolder(safe);
 }
 
+/** Solo hora para columna «Hora subida» (sin fecha). */
 function limaStamp_() {
-  return Utilities.formatDate(new Date(), 'America/Lima', 'yyyy-MM-dd HH:mm:ss');
+  return Utilities.formatDate(new Date(), 'America/Lima', 'HH:mm:ss');
 }
 
 function limaFileStamp_() {

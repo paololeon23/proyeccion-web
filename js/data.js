@@ -28,6 +28,16 @@
     var n = parseFloat(s);
     return isFinite(n) ? n : 0;
   }
+  /** "25/11/2026 14:31:43" / "2026-11-25 14:31:43" → "14:31:43" */
+  function onlyTime(v) {
+    var s = String(v == null ? "" : v).trim();
+    if (!s) return "";
+    var m = s.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+    if (!m) return s;
+    var hh = m[1].length < 2 ? "0" + m[1] : m[1];
+    var ss = m[3] != null ? m[3] : "00";
+    return hh + ":" + m[2] + ":" + ss;
+  }
   function get(rec, key) {
     if (!rec) return "";
     if (rec[key] != null && rec[key] !== "") return rec[key];
@@ -81,7 +91,7 @@
     out.Lote = canonLote(out.Lote);
     if (out.Campaña) out.Campaña = campanaYear(out.Campaña);
     out.Anexo = String(get(rec, "Anexo") || rec.Anexo || rec.anexo || "").trim();
-    out["Hora subida"] = asText(get(rec, "Hora subida") || "");
+    out["Hora subida"] = onlyTime(get(rec, "Hora subida") || "");
     out["Foto cabecera"] = out.Anexo || String(get(rec, "Foto cabecera") || rec.foto || rec.Foto || "").trim();
     ["N° Muestra", "N° Ramas", "Yema Productiva", "Yema Abierta", "Yemas Cerradas", "Yemas Muertas",
       "Botón Floral", "Flor", "Cuaja", "E1 (Verde)", "E2 (Rosado)", "E3 (Guinda)", "E4 (50%-70%)", "E5 (Maduro)",

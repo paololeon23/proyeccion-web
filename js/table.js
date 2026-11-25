@@ -245,15 +245,47 @@
     state._rows = sorted;
     state._pages = pages;
   }
+  var FILL_META = ["Lote", "Fecha", "DNI", "Nombre", "Modulo", "Turno", "Lotes", "Semana", "Etapa", "Variedad", "Area", "Campaña", "Observación", "Anexo", "Hora subida"];
+  var FILL_ZERO = ["N° Muestra", "N° Ramas", "Yema Productiva", "Yema Abierta", "Yemas Cerradas", "Yemas Muertas", "Botón Floral", "Flor", "Cuaja", "E1 (Verde)", "E2 (Rosado)", "E3 (Guinda)", "E4 (50%-70%)", "E5 (Maduro)"];
+  function cellEmpty(v) {
+    return v == null || v === "";
+  }
+  function exportVal(c, r, carry) {
+    var v;
+    if (c === "Anexo") v = r.Anexo || r["Foto cabecera"] || (carry && carry.Anexo) || "";
+    else if (c === "Hora subida") {
+      v = r["Hora subida"] || (carry && carry["Hora subida"]) || "";
+      var tm = String(v).match(/(\d{1,2}:\d{2}(?::\d{2})?)/);
+      if (tm) v = tm[1].length === 5 ? tm[1] + ":00" : tm[1];
+    } else {
+      v = r[c];
+      if (cellEmpty(v) && carry && !cellEmpty(carry[c])) v = carry[c];
+    }
+    if (cellEmpty(v)) {
+      if (FILL_ZERO.indexOf(c) >= 0) return 0;
+      return "-";
+    }
+    return v;
+  }
   function exportXls() {
     var rows = state._rows || [];
     var columns = cols();
     if (typeof XLSX === "undefined") return;
     var aoa = [columns];
+    var carry = {};
+    var prevKey = "";
     rows.forEach(function (r) {
+      var key = String(r.Fecha || "") + "|" + String(r.DNI || "") + "|" + String(r.Lote || carry.Lote || "");
+      if (prevKey && key !== prevKey && r.Lote) {
+        carry = {};
+      }
+      prevKey = key;
+      FILL_META.forEach(function (k) {
+        var val = k === "Anexo" ? (r.Anexo || r["Foto cabecera"]) : r[k];
+        if (!cellEmpty(val)) carry[k] = val;
+      });
       aoa.push(columns.map(function (c) {
-        if (c === "Anexo") return r.Anexo || r["Foto cabecera"] || "";
-        return r[c] == null ? "" : r[c];
+        return exportVal(c, r, carry);
       }));
     });
     var wb = XLSX.utils.book_new();

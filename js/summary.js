@@ -28,7 +28,11 @@
       .replace(/"/g, "&quot;");
   }
   function fmt(n) {
-    return Number(n || 0).toLocaleString("es-PE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    var x = Number(n || 0);
+    if (!isFinite(x)) return "-";
+    var s = x.toLocaleString("es-PE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    if (s === "0.0" || s === "0,0") return "-";
+    return s;
   }
   function heat(n, on) {
     if (!on || n <= 0) return "";
