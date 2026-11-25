@@ -7,7 +7,7 @@
  * - Cada cartilla = N filas (una por muestra), nunca pisa
  * - Hoja 1 Evaluadores: acceso (DNI + Activo). Sin DNI se simula uno.
  * - Hoja 2 Proyecciones: registros. N° Muestra = 1..N automático por cartilla.
- * - POST action=addEvaluador | setAcceso: alta / activar desde la web
+ * - POST action=addEvaluador | setAcceso | deleteEvaluador: alta / activar / borrar desde la web
  *
  * SETUP:
  * 1) Sheet destino → Extensiones → Apps Script → pega este archivo
@@ -117,7 +117,7 @@ function doGet(e) {
         sheets: [SHEET_EVAL, SHEET_NAME],
         headers: HEADERS,
         evalHeaders: EVAL_HEADERS,
-        acciones: ['proyecciones', 'evaluadores', 'hojas', 'acceso', 'addEvaluador'],
+        acciones: ['proyecciones', 'evaluadores', 'hojas', 'acceso', 'addEvaluador', 'deleteEvaluador'],
         ts: nowIso_()
       });
     }
@@ -168,6 +168,9 @@ function doPost(e) {
     }
     if (action === 'addEvaluador' || action === 'crearEvaluador' || action === 'nuevoEvaluador') {
       return json_(addEvaluador_(body));
+    }
+    if (action === 'deleteEvaluador' || action === 'eliminarEvaluador' || action === 'borrarEvaluador') {
+      return json_(deleteEvaluador_(body));
     }
     if (action === 'uploadPhoto' || action === 'foto') {
       return json_(uploadPhotoOnly_(body));
@@ -247,7 +250,7 @@ function appendCartilla_(ss, body) {
   sheet.getRange(startRow, 1, matrix.length, HEADERS.length).setValues(matrix);
   markClientIdDone_(clientId);
 
-  return {
+    return {
     ok: true,
     created: true,
     duplicate: false,
@@ -727,6 +730,36 @@ function setAcceso_(body) {
   sheet.getRange(row, 1, 1, EVAL_HEADERS.length).setValues([[dni, nombre, body.rol || 'Evaluador', body.modulo || '', on]]);
   try { sheet.getRange(row, 5).insertCheckboxes(); } catch (_) {}
   return { ok: true, dni: dni, activo: on, created: true, nombre: nombre };
+}
+
+/** Elimina la fila del DNI en hoja Evaluadores (quita acceso total). */
+function deleteEvaluador_(body) {
+  body = body || {};
+  var dni = String(body.dni || body.DNI || '').replace(/\D/g, '');
+  if (!dniOk_(dni)) throw new Error('DNI inválido (8 dígitos)');
+
+  var lock = LockService.getScriptLock();
+  var got = false;
+  try {
+    got = lock.tryLock(15000);
+    if (!got) throw new Error('El servidor está ocupado. Intente de nuevo.');
+
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ensureEvalSheet_(ss);
+    var all = readEvaluadores_();
+    for (var i = 0; i < all.length; i++) {
+      if (all[i].dni === dni) {
+        var nombre = all[i].nombre || '';
+        sheet.deleteRow(all[i].row);
+        return { ok: true, deleted: true, dni: dni, nombre: nombre };
+      }
+    }
+    return { ok: false, error: 'DNI no encontrado en Evaluadores', dni: dni };
+  } finally {
+    if (got) {
+      try { lock.releaseLock(); } catch (_) {}
+    }
+  }
 }
 
 /** Alta explícita desde la web: DNI + Nombre → hoja Evaluadores (activo). */

@@ -35,12 +35,17 @@
   }
   function icoToggle(on) {
     if (on) {
-      return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.5 7.5 10 16l-4.5-4.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      /* Desactivar */
+      return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M9 15h6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>';
     }
-    return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7 7 17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
+    /* Activar */
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v8M9.5 12.5 12 15l2.5-2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   }
   function icoUser() {
     return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 19v-1a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v1" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="10" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>';
+  }
+  function icoTrash() {
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5.8A1.8 1.8 0 0 1 11.8 4h.4A1.8 1.8 0 0 1 14 5.8V7m-5.5 3v7m3.5-7v7m3.5-7v7M7.5 7l.6 12.2A1.8 1.8 0 0 0 9.9 21h4.2a1.8 1.8 0 0 0 1.8-1.8L16.5 7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   }
   function filtered() {
     var qEl = document.getElementById("q-usuarios");
@@ -91,9 +96,13 @@
           "<td class=\"dni\">" + esc(u.dni || "—") + "</td>" +
           '<td class="col-user"><span class="user-cell">' + icoUser() + "<strong>" + esc(u.nombre) + "</strong></span></td>" +
           "<td>" + esc(u.rol) + "</td>" +
-          "<td>" + badge + "</td>" +
-          '<td class="col-actions"><button type="button" class="' + actionCls + '" data-act="toggle" title="' + actionLabel + '" aria-label="' + actionLabel + '">' +
-          icoToggle(u.activo) + "<span>" + (u.activo ? "Desactivar" : "Activar") + "</span></button></td>" +
+          '<td class="col-estado">' + badge + "</td>" +
+          '<td class="col-actions"><div class="act-row">' +
+          '<button type="button" class="' + actionCls + '" data-act="toggle" title="' + actionLabel + '" aria-label="' + actionLabel + '">' +
+          icoToggle(u.activo) + "<span>" + (u.activo ? "Desactivar" : "Activar") + "</span></button>" +
+          '<button type="button" class="act-btn act-del" data-act="delete" title="Eliminar usuario" aria-label="Eliminar usuario">' +
+          icoTrash() + "<span>Eliminar</span></button>" +
+          "</div></td>" +
           "</tr>";
       }).join("");
     }
@@ -151,6 +160,47 @@
     no.onclick = closeAsk;
     box.hidden = false;
     yes.focus();
+  }
+  function askDelete(id) {
+    var user = findUser(id);
+    var box = document.getElementById("confirm");
+    var text = document.getElementById("confirm-text");
+    var yes = document.getElementById("confirm-yes");
+    var no = document.getElementById("confirm-no");
+    if (!user || !box || !yes) return;
+    text.textContent = "¿Eliminar a " + user.nombre + " · DNI " + user.dni + " de Evaluadores? Perderá el acceso.";
+    yes.textContent = "Eliminar";
+    yes.className = "confirm-yes off";
+    yes.onclick = function () { closeAsk(); removeUser(id); };
+    no.onclick = closeAsk;
+    box.hidden = false;
+    yes.focus();
+  }
+  function removeUser(id) {
+    var user = findUser(id);
+    if (!user || !user.dni) return;
+    if (!QBE.api || !QBE.api.deleteEvaluador) {
+      if (QBE.shell && QBE.shell.toast) QBE.shell.toast("API sin eliminar. Redeploy Code.gs", true);
+      return;
+    }
+    showCredModal(false, user);
+    var title = document.getElementById("cred-title");
+    var text = document.getElementById("cred-text");
+    if (title) title.textContent = "Eliminando usuario";
+    if (text) text.textContent = "Quitando de la hoja Evaluadores…";
+    QBE.api.deleteEvaluador({ dni: user.dni })
+      .then(function () {
+        return reloadFromApi();
+      })
+      .then(function () {
+        hideCredModal();
+        if (QBE.audit) QBE.audit.add("Eliminar evaluador", user.dni + " · " + user.nombre);
+        if (QBE.shell && QBE.shell.toast) QBE.shell.toast(user.nombre + " · eliminado");
+      })
+      .catch(function (err) {
+        hideCredModal();
+        if (QBE.shell && QBE.shell.toast) QBE.shell.toast((err && err.message) || "No se pudo eliminar", true);
+      });
   }
   function toggle(id) {
     var i;
@@ -291,11 +341,14 @@
       var body = document.getElementById("users-body");
       if (body) {
         body.addEventListener("click", function (e) {
-          var btn = e.target.closest("button[data-act='toggle']");
+          var btn = e.target.closest("button[data-act]");
           if (!btn) return;
           var tr = btn.closest("tr[data-id]");
           if (!tr) return;
-          ask(tr.getAttribute("data-id"));
+          var id = tr.getAttribute("data-id");
+          var act = btn.getAttribute("data-act");
+          if (act === "delete") askDelete(id);
+          else if (act === "toggle") ask(id);
         });
       }
       var askBox = document.getElementById("confirm");

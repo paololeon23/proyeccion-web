@@ -111,6 +111,13 @@
       activo: true,
     });
   }
+  function deleteEvaluador(payload) {
+    payload = payload || {};
+    return post({
+      action: "deleteEvaluador",
+      dni: payload.dni,
+    });
+  }
 
   QBE.api = {
     url: apiUrl,
@@ -119,6 +126,7 @@
     evaluadores: evaluadores,
     setAcceso: setAcceso,
     addEvaluador: addEvaluador,
+    deleteEvaluador: deleteEvaluador,
     meta: meta,
     ping: ping,
     get: get,
