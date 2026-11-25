@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="css/styles.css?v=proy14" />
     <link rel="stylesheet" href="css/dashboard.css?v=proy14" />
     <link rel="stylesheet" href="css/responsive.css?v=proy14" />
-    <link rel="stylesheet" href="css/proy.css?v=proy52" />
+    <link rel="stylesheet" href="css/proy.css?v=proy53" />
   </head>
   <body>
     <div id="backdrop" class="backdrop"></div>
@@ -210,6 +210,7 @@
                   <option value="0">Sin acceso</option>
                 </select>
                 <input id="q-usuarios" type="search" placeholder="Buscar DNI o nombre…" />
+                <button type="button" class="filter-btn" id="btn-users-add">+ Registrar</button>
                 <button type="button" class="ghost-btn" id="btn-users-xls">Excel</button>
               </div>
             </div>
@@ -274,6 +275,32 @@
         </div>
       </div>
     </div>
+    <div id="user-modal" class="user-modal" hidden>
+      <div class="user-card" role="dialog" aria-modal="true" aria-labelledby="user-modal-title">
+        <header class="user-modal-head">
+          <div>
+            <p class="detail-kicker">Hoja Evaluadores</p>
+            <h2 id="user-modal-title">Registrar evaluador</h2>
+          </div>
+          <button type="button" class="detail-close" data-user-close aria-label="Cerrar">×</button>
+        </header>
+        <form id="user-form" class="user-form" autocomplete="off">
+          <label class="user-field">
+            <span>DNI</span>
+            <input id="user-dni" name="dni" type="text" inputmode="numeric" maxlength="8" placeholder="8 dígitos" required />
+          </label>
+          <label class="user-field">
+            <span>Nombre completo</span>
+            <input id="user-nombre" name="nombre" type="text" maxlength="80" placeholder="Apellidos y nombres" required />
+          </label>
+          <p class="user-hint">Se guarda directo en la hoja <strong>Evaluadores</strong> con acceso activo.</p>
+          <div class="user-modal-actions">
+            <button type="button" class="ghost-btn" data-user-close>Cancelar</button>
+            <button type="submit" class="filter-btn" id="user-save">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
     <div id="cred-modal" class="cred-modal" hidden>
       <div class="cred-card" role="dialog" aria-modal="true" aria-labelledby="cred-title" aria-live="polite">
         <div class="cred-loader" aria-hidden="true">
@@ -321,8 +348,8 @@
     <script src="js/filters.js?v=proy50"></script>
     <script src="js/table.js?v=proy48"></script>
     <script src="js/summary.js?v=proy51"></script>
-    <script src="js/users.js?v=proy48"></script>
-    <script src="js/api.js?v=proy45"></script>
+    <script src="js/users.js?v=proy55"></script>
+    <script src="js/api.js?v=proy54"></script>
     <script src="js/app.js?v=proy49"></script>
     <script src="js/auth.js?v=proy14"></script>
     <script src="js/shell.js?v=proy28"></script>

@@ -17,7 +17,9 @@
     return String(s || "").toLowerCase().replace(/\s+/g, " ").trim();
   }
   function setFromApi(list) {
-    rows = (list || []).map(function (u, i) {
+    /* Hoja: filas nuevas al final → invertir para mostrar el más reciente primero */
+    var src = (list || []).slice().reverse();
+    rows = src.map(function (u, i) {
       var dni = String(u.dni || "").trim();
       var nombre = String(u.nombre || "").replace(/\s+/g, " ").trim();
       return {
@@ -178,6 +180,89 @@
       .then(function () { setTimeout(done, 450); })
       .catch(fail);
   }
+  function closeUserModal() {
+    var box = document.getElementById("user-modal");
+    if (box) box.hidden = true;
+  }
+  function openUserModal() {
+    var box = document.getElementById("user-modal");
+    var form = document.getElementById("user-form");
+    var dni = document.getElementById("user-dni");
+    var nombre = document.getElementById("user-nombre");
+    if (!box) return;
+    if (form) form.reset();
+    if (dni) dni.value = "";
+    if (nombre) nombre.value = "";
+    box.hidden = false;
+    if (dni) dni.focus();
+  }
+  function reloadFromApi() {
+    if (!QBE.api || !QBE.api.evaluadores) return Promise.resolve();
+    return QBE.api.evaluadores().then(function (data) {
+      setFromApi((data && data.evaluadores) || []);
+    });
+  }
+  function saveNewUser(ev) {
+    if (ev && ev.preventDefault) ev.preventDefault();
+    var dniEl = document.getElementById("user-dni");
+    var nomEl = document.getElementById("user-nombre");
+    var saveBtn = document.getElementById("user-save");
+    var dni = String((dniEl && dniEl.value) || "").replace(/\D/g, "");
+    var nombre = String((nomEl && nomEl.value) || "").replace(/\s+/g, " ").trim();
+    if (!/^\d{8}$/.test(dni)) {
+      if (QBE.shell && QBE.shell.toast) QBE.shell.toast("DNI inválido (8 dígitos)", true);
+      if (dniEl) dniEl.focus();
+      return;
+    }
+    if (nombre.length < 3) {
+      if (QBE.shell && QBE.shell.toast) QBE.shell.toast("Ingrese el nombre completo", true);
+      if (nomEl) nomEl.focus();
+      return;
+    }
+    var exists = rows.some(function (u) { return u.dni === dni; });
+    if (exists && !window.confirm("El DNI ya está en la lista. ¿Actualizar nombre y dejarlo activo?")) return;
+
+    if (saveBtn) saveBtn.disabled = true;
+    showCredModal(true, { dni: dni, nombre: nombre });
+    var title = document.getElementById("cred-title");
+    var text = document.getElementById("cred-text");
+    if (title) title.textContent = "Registrando evaluador";
+    if (text) text.textContent = "Guardando en la hoja Evaluadores…";
+
+    /* setAcceso crea/activa en hoja Evaluadores (API actual). addEvaluador si ya está desplegado. */
+    function registerUser() {
+      var payload = { dni: dni, nombre: nombre, rol: "Evaluador", activo: true };
+      if (!QBE.api || !QBE.api.setAcceso) {
+        return Promise.reject({ message: "API no disponible" });
+      }
+      if (!QBE.api.addEvaluador) return QBE.api.setAcceso(payload);
+      return QBE.api.addEvaluador(payload).catch(function (err) {
+        var msg = String((err && err.message) || "");
+        if (/clientId|desconocida|addEvaluador/i.test(msg)) {
+          return QBE.api.setAcceso(payload);
+        }
+        return Promise.reject(err);
+      });
+    }
+
+    registerUser().then(function (res) {
+      page = 1;
+      return reloadFromApi().then(function () { return res; });
+    }).then(function (res) {
+      hideCredModal();
+      closeUserModal();
+      if (QBE.audit) QBE.audit.add("Registrar evaluador", dni + " · " + nombre);
+      if (QBE.shell && QBE.shell.toast) {
+        var updated = res && (res.created === false || res.updated === true);
+        QBE.shell.toast(updated ? "Evaluador actualizado · activo" : "Evaluador registrado · con acceso");
+      }
+    }).catch(function (err) {
+      hideCredModal();
+      if (QBE.shell && QBE.shell.toast) QBE.shell.toast((err && err.message) || "No se pudo registrar", true);
+    }).finally(function () {
+      if (saveBtn) saveBtn.disabled = false;
+    });
+  }
   function bind() {
     if (!bound) {
       bound = true;
@@ -187,6 +272,22 @@
       if (estado) estado.addEventListener("change", function () { page = 1; render(); });
       var xls = document.getElementById("btn-users-xls");
       if (xls) xls.addEventListener("click", exportRows);
+      var addBtn = document.getElementById("btn-users-add");
+      if (addBtn) addBtn.addEventListener("click", openUserModal);
+      var form = document.getElementById("user-form");
+      if (form) form.addEventListener("submit", saveNewUser);
+      var dniInput = document.getElementById("user-dni");
+      if (dniInput) {
+        dniInput.addEventListener("input", function () {
+          dniInput.value = String(dniInput.value || "").replace(/\D/g, "").slice(0, 8);
+        });
+      }
+      var userModal = document.getElementById("user-modal");
+      if (userModal) {
+        userModal.addEventListener("click", function (e) {
+          if (e.target === userModal || e.target.closest("[data-user-close]")) closeUserModal();
+        });
+      }
       var body = document.getElementById("users-body");
       if (body) {
         body.addEventListener("click", function (e) {
@@ -202,9 +303,12 @@
         askBox.addEventListener("click", function (e) { if (e.target === askBox) closeAsk(); });
       }
       document.addEventListener("keydown", function (e) {
+        if (e.key !== "Escape") return;
+        var userBox = document.getElementById("user-modal");
+        if (userBox && !userBox.hidden) { closeUserModal(); return; }
         var box = document.getElementById("confirm");
         if (!box || box.hidden) return;
-        if (e.key === "Escape") closeAsk();
+        closeAsk();
       });
       var pager = document.getElementById("users-pager");
       if (pager) {

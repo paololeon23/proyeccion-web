@@ -1496,6 +1496,88 @@ table.he tr.row-total td {
   .detail-btn span { display: none; }
 }
 
+.user-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 115;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(12, 18, 14, 0.55);
+  backdrop-filter: blur(5px);
+}
+.user-modal[hidden] { display: none !important; }
+.user-card {
+  width: min(100%, 440px);
+  border-radius: 22px;
+  background: linear-gradient(180deg, #fff 0%, #f7faf3 100%);
+  box-shadow: 0 28px 70px rgba(12, 18, 14, 0.28);
+  overflow: hidden;
+  animation: cred-in 0.24s ease-out;
+}
+.user-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 22px 12px;
+  border-bottom: 1px solid #e7ece4;
+}
+.user-modal-head h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #1f3d16;
+}
+.user-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 22px 22px;
+}
+.user-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.user-field span {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9aa3ad;
+}
+.user-field input {
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid #e7ece4;
+  background: #f8faf6;
+  padding: 0 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f2937;
+}
+.user-field input:focus {
+  outline: 0;
+  border-color: #b7d98a;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(141, 198, 63, 0.18);
+}
+.user-hint {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #5b6470;
+  line-height: 1.4;
+}
+.user-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
 .loading {
   z-index: 130 !important;
   background: rgba(12, 18, 14, 0.45) !important;

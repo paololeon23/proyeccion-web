@@ -100,6 +100,17 @@
       modulo: payload.modulo || "",
     });
   }
+  function addEvaluador(payload) {
+    payload = payload || {};
+    /* Preferir setAcceso: ya crea en Evaluadores con Activo=true en todas las versiones. */
+    return setAcceso({
+      dni: payload.dni,
+      nombre: payload.nombre || "",
+      rol: payload.rol || "Evaluador",
+      modulo: payload.modulo || "",
+      activo: true,
+    });
+  }
 
   QBE.api = {
     url: apiUrl,
@@ -107,6 +118,7 @@
     list: list,
     evaluadores: evaluadores,
     setAcceso: setAcceso,
+    addEvaluador: addEvaluador,
     meta: meta,
     ping: ping,
     get: get,
