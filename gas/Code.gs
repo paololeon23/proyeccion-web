@@ -7,7 +7,7 @@
  * - Cada cartilla = N filas (una por muestra), nunca pisa
  * - Hoja 1 Evaluadores: acceso (DNI + Activo). Sin DNI se simula uno.
  * - Hoja 2 Proyecciones: registros. N° Muestra = 1..N automático por cartilla.
- * - POST action=addEvaluador | setAcceso | deleteEvaluador: alta / activar / borrar desde la web
+ * - POST action=addEvaluador | setAcceso | deleteEvaluador | deleteRegistro: alta / activar / borrar desde la web
  *
  * SETUP:
  * 1) Sheet destino → Extensiones → Apps Script → pega este archivo
@@ -113,11 +113,11 @@ function doGet(e) {
       return json_({
         ok: true,
         api: 'proyecciones',
-        version: '1.3.0',
+        version: '1.4.1',
         sheets: [SHEET_EVAL, SHEET_NAME],
         headers: HEADERS,
         evalHeaders: EVAL_HEADERS,
-        acciones: ['proyecciones', 'evaluadores', 'hojas', 'acceso', 'addEvaluador', 'deleteEvaluador'],
+        acciones: ['proyecciones', 'evaluadores', 'hojas', 'acceso', 'addEvaluador', 'deleteEvaluador', 'deleteRegistro'],
         ts: nowIso_()
       });
     }
@@ -134,7 +134,7 @@ function doGet(e) {
       return json_({
         ok: true,
         api: 'proyecciones',
-        version: '1.3.0',
+        version: '1.4.1',
         evaluadores: listEvaluadores_(String(p.soloActivos || '') === '1'),
         proyecciones: listProyecciones_(p)
       });
@@ -171,6 +171,9 @@ function doPost(e) {
     }
     if (action === 'deleteEvaluador' || action === 'eliminarEvaluador' || action === 'borrarEvaluador') {
       return json_(deleteEvaluador_(body));
+    }
+    if (action === 'deleteRegistro' || action === 'eliminarRegistro' || action === 'borrarFila') {
+      return json_(deleteRegistro_(body));
     }
     if (action === 'uploadPhoto' || action === 'foto') {
       return json_(uploadPhotoOnly_(body));
@@ -624,11 +627,25 @@ function readSheetRows_(sheetName) {
     var any = false;
     for (var i = 0; i < headers.length; i++) {
       var cell = values[r][i];
+      var header = headers[i];
       if (Object.prototype.toString.call(cell) === '[object Date]' && !isNaN(cell.getTime())) {
-        cell = Utilities.formatDate(cell, 'America/Lima', 'yyyy-MM-dd');
+        // Hora subida: SOLO hora (Sheets guarda Time/DateTime como Date)
+        if (header === 'Hora subida' || header === 'Hora Subida') {
+          cell = Utilities.formatDate(cell, 'America/Lima', 'HH:mm:ss');
+          if (cell === '00:00:00') cell = '';
+        } else if (header === 'Fecha') {
+          cell = Utilities.formatDate(cell, 'America/Lima', 'yyyy-MM-dd');
+        } else {
+          var withTime = Utilities.formatDate(cell, 'America/Lima', 'HH:mm:ss');
+          if (withTime !== '00:00:00') {
+            cell = Utilities.formatDate(cell, 'America/Lima', 'yyyy-MM-dd HH:mm:ss');
+          } else {
+            cell = Utilities.formatDate(cell, 'America/Lima', 'yyyy-MM-dd');
+          }
+        }
       }
       if (cell !== '' && cell != null) any = true;
-      obj[headers[i]] = cell == null ? '' : cell;
+      obj[header] = cell == null ? '' : cell;
     }
     if (!any) continue;
     obj._row = r + 1;
@@ -730,6 +747,98 @@ function setAcceso_(body) {
   sheet.getRange(row, 1, 1, EVAL_HEADERS.length).setValues([[dni, nombre, body.rol || 'Evaluador', body.modulo || '', on]]);
   try { sheet.getRange(row, 5).insertCheckboxes(); } catch (_) {}
   return { ok: true, dni: dni, activo: on, created: true, nombre: nombre };
+}
+
+/**
+ * Borra UNA sola fila de Proyecciones.
+ * Clave: Nombre + N° Muestra (diferencia varias del mismo usuario).
+ * Refuerzo: Lote + Fecha + DNI + fila hoja (_row) para no tocar otra cartilla.
+ */
+function deleteRegistro_(body) {
+  body = body || {};
+  var nombre = String(body.nombre || body.Nombre || '').replace(/\s+/g, ' ').trim().toLowerCase();
+  var muestra = Number(body.nMuestra != null ? body.nMuestra : body['N° Muestra']);
+  if (!nombre) throw new Error('Falta Nombre para eliminar');
+  if (!isFinite(muestra) || muestra < 1) throw new Error('Falta N° Muestra para eliminar');
+
+  var lote = String(body.lote || body.Lote || '').replace(/\s+/g, '').trim().toUpperCase();
+  var fecha = fechaKey_(body.fecha || body.Fecha || '');
+  var dni = String(body.dni || body.DNI || '').replace(/\D/g, '');
+  var wantRow = Number(body.row || body._row || body.sheetRow || 0) || 0;
+
+  var lock = LockService.getScriptLock();
+  var got = false;
+  try {
+    got = lock.tryLock(20000);
+    if (!got) throw new Error('El servidor está ocupado. Intente de nuevo.');
+
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName(SHEET_NAME);
+    if (!sheet) throw new Error('No existe hoja Proyecciones');
+
+    var pack = readSheetRows_(SHEET_NAME);
+    var hits = [];
+    for (var i = 0; i < pack.rows.length; i++) {
+      var row = pack.rows[i];
+      var rowNom = String(row.Nombre || '').replace(/\s+/g, ' ').trim().toLowerCase();
+      if (!rowNom && row.Evaluador) {
+        var em = String(row.Evaluador).match(/^[—–\-\s]*(.+)$/);
+        rowNom = String(em ? em[1] : row.Evaluador).replace(/\s+/g, ' ').trim().toLowerCase();
+        var em2 = String(row.Evaluador).match(/^(\d{8})\s*[—–\-]\s*(.+)$/);
+        if (em2) rowNom = String(em2[2] || '').replace(/\s+/g, ' ').trim().toLowerCase();
+      }
+      var rowM = Number(row['N° Muestra']);
+      if (rowNom !== nombre || rowM !== muestra) continue;
+      if (lote) {
+        var rowLote = String(row.Lote || '').replace(/\s+/g, '').trim().toUpperCase();
+        if (rowLote !== lote) continue;
+      }
+      if (fecha) {
+        var rowFecha = fechaKey_(row.Fecha);
+        if (rowFecha && rowFecha !== fecha) continue;
+      }
+      if (dni) {
+        var rowDni = String(row.DNI || '').replace(/\D/g, '');
+        if (!rowDni && row.Evaluador) {
+          var dm = String(row.Evaluador).match(/^(\d{8})/);
+          if (dm) rowDni = dm[1];
+        }
+        if (rowDni && rowDni !== dni) continue;
+      }
+      hits.push(row);
+    }
+
+    if (!hits.length) throw new Error('No se encontró la muestra ' + muestra + ' de ' + String(body.nombre || body.Nombre || ''));
+
+    var target = null;
+    if (wantRow > 1) {
+      for (var h = 0; h < hits.length; h++) {
+        if (Number(hits[h]._row) === wantRow) { target = hits[h]; break; }
+      }
+    }
+    if (!target) {
+      if (hits.length === 1) target = hits[0];
+      else throw new Error('Hay varias filas iguales (Nombre + N° Muestra). Use Lote/Fecha o recargue e intente de nuevo.');
+    }
+
+    var sheetRow = Number(target._row);
+    if (!(sheetRow > 1)) throw new Error('Fila inválida en hoja');
+    sheet.deleteRow(sheetRow);
+    return {
+      ok: true,
+      deleted: true,
+      sheet: SHEET_NAME,
+      row: sheetRow,
+      nombre: String(body.nombre || body.Nombre || ''),
+      nMuestra: muestra,
+      lote: String(target.Lote || ''),
+      fecha: fechaKey_(target.Fecha) || ''
+    };
+  } finally {
+    if (got) {
+      try { lock.releaseLock(); } catch (_) {}
+    }
+  }
 }
 
 /** Elimina la fila del DNI en hoja Evaluadores (quita acceso total). */

@@ -28,15 +28,27 @@
     var n = parseFloat(s);
     return isFinite(n) ? n : 0;
   }
-  /** "25/11/2026 14:31:43" / "2026-11-25 14:31:43" → "14:31:43" */
+  /** "25/11/2026 14:31:43" / "2026-11-25 14:31:43" / Date → "14:31:43". Solo fecha → "". */
   function onlyTime(v) {
+    if (v != null && Object.prototype.toString.call(v) === "[object Date]" && !isNaN(v.getTime())) {
+      var hh = String(v.getHours());
+      var mm = String(v.getMinutes());
+      var ss = String(v.getSeconds());
+      if (hh.length < 2) hh = "0" + hh;
+      if (mm.length < 2) mm = "0" + mm;
+      if (ss.length < 2) ss = "0" + ss;
+      if (hh === "00" && mm === "00" && ss === "00") return "";
+      return hh + ":" + mm + ":" + ss;
+    }
     var s = String(v == null ? "" : v).trim();
     if (!s) return "";
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return "";
+    if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}$/.test(s)) return "";
     var m = s.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
-    if (!m) return s;
-    var hh = m[1].length < 2 ? "0" + m[1] : m[1];
-    var ss = m[3] != null ? m[3] : "00";
-    return hh + ":" + m[2] + ":" + ss;
+    if (!m) return "";
+    var h2 = m[1].length < 2 ? "0" + m[1] : m[1];
+    var s2 = m[3] != null ? m[3] : "00";
+    return h2 + ":" + m[2] + ":" + s2;
   }
   function get(rec, key) {
     if (!rec) return "";
@@ -99,6 +111,8 @@
       if (out[k] !== "" && out[k] != null) out[k] = asNumber(out[k]) || out[k];
     });
     out._q = fold([out.Lote, out.DNI, out.Nombre, out.Modulo, out.Variedad, out.Campaña, out.Etapa].join(" "));
+    var sheetRow = Number(rec._row || rec.row || rec._sheetRow || 0);
+    if (sheetRow > 1) out._row = sheetRow;
     return out;
   }
   function canonLote(raw) {

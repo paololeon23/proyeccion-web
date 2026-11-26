@@ -28,6 +28,16 @@
   function isNumCol(name) {
     return /^(N°|Yema|Yemas|Botón|Flor|Cuaja|E[1-5]|Turno|Lotes|Semana|Area)/i.test(name) || name === "Flor" || name === "Cuaja";
   }
+  var STICKY_COLS = {
+    Lote: "sticky-col sticky-c1",
+    Fecha: "sticky-col sticky-c2",
+    DNI: "sticky-col sticky-c3",
+    Nombre: "sticky-col sticky-c4",
+    "N° Muestra": "sticky-col sticky-c5",
+  };
+  function stickyCls(name) {
+    return STICKY_COLS[name] || "";
+  }
   function heatClass(v, on) {
     if (!on) return "";
     var n = Number(v);
@@ -39,6 +49,9 @@
   }
   function icoDetail() {
     return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 11.2V16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="8.2" r="1.1" fill="currentColor"/></svg>';
+  }
+  function icoTrash() {
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5.8A1.8 1.8 0 0 1 11.8 4h.4A1.8 1.8 0 0 1 14 5.8V7m-5.5 3v7m3.5-7v7m3.5-7v7M7.5 7l.6 12.2A1.8 1.8 0 0 0 9.9 21h4.2a1.8 1.8 0 0 0 1.8-1.8L16.5 7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   }
   function paintPager(pager, pages) {
     if (!pager) return;
@@ -204,6 +217,7 @@
         if (c === "Nombre") cls.push("col-nombre");
         if (c === "Fecha") cls.push("col-fecha");
         if (c === "Etapa") cls.push("col-etapa");
+        if (stickyCls(c)) cls.push(stickyCls(c));
         return '<th data-key="' + esc(c) + '" class="' + cls.join(" ") + '">' + esc(c) + mark + "</th>";
       }).join("") + '<th class="col-acciones" data-no-sort>Acciones</th>';
     }
@@ -212,7 +226,7 @@
         body.innerHTML = '<tr class="empty"><td colspan="' + colSpan + '">No hay registros para los filtros seleccionados.</td></tr>';
       } else {
         var html = "";
-        var i, j, r, c, v, cellCls, abs;
+        var i, j, r, c, v, cellCls, abs, stick;
         for (i = 0; i < pageRows.length; i += 1) {
           r = pageRows[i];
           abs = from + i;
@@ -225,10 +239,16 @@
             if (c === "Nombre" || c === "Evaluador") cellCls.push("col-nombre");
             if (c === "Fecha") cellCls.push("col-fecha");
             if (c === "Etapa") cellCls.push("col-etapa");
+            stick = stickyCls(c);
+            if (stick) cellCls.push(stick);
             html += '<td class="' + cellCls.join(" ") + heatClass(v, colores && isNumCol(c)) + '">' + esc(v === "" || v == null ? "—" : v) + "</td>";
           }
-          html += '<td class="col-acciones"><button type="button" class="detail-btn" data-act="detail" data-row="' + abs + '" title="Ver detalles" aria-label="Ver detalles">' +
-            icoDetail() + "<span>Detalles</span></button></td></tr>";
+          html += '<td class="col-acciones"><div class="act-row act-row-reg">' +
+            '<button type="button" class="detail-btn" data-act="detail" data-row="' + abs + '" title="Ver detalles" aria-label="Ver detalles">' +
+            icoDetail() + "<span>Detalles</span></button>" +
+            '<button type="button" class="act-btn act-del" data-act="delete" data-row="' + abs + '" title="Eliminar muestra" aria-label="Eliminar muestra">' +
+            icoTrash() + "<span>Eliminar</span></button>" +
+            "</div></td></tr>";
         }
         body.innerHTML = html;
       }
@@ -245,26 +265,37 @@
     state._rows = sorted;
     state._pages = pages;
   }
-  var FILL_META = ["Lote", "Fecha", "DNI", "Nombre", "Modulo", "Turno", "Lotes", "Semana", "Etapa", "Variedad", "Area", "Campaña", "Observación", "Anexo", "Hora subida"];
-  var FILL_ZERO = ["N° Muestra", "N° Ramas", "Yema Productiva", "Yema Abierta", "Yemas Cerradas", "Yemas Muertas", "Botón Floral", "Flor", "Cuaja", "E1 (Verde)", "E2 (Rosado)", "E3 (Guinda)", "E4 (50%-70%)", "E5 (Maduro)"];
+  var FILL_META = ["Lote", "Fecha", "DNI", "Nombre", "Modulo", "Turno", "Lotes", "Semana", "Etapa", "Variedad", "Area", "Campaña"];
   function cellEmpty(v) {
-    return v == null || v === "";
+    return v == null || v === "" || v === "-";
+  }
+  function exportHora(v) {
+    var s = String(v == null ? "" : v).trim();
+    if (!s || s === "-") return "";
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return "";
+    var tm = s.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+    if (!tm) return "";
+    var hh = tm[1].length < 2 ? "0" + tm[1] : tm[1];
+    var ss = tm[3] != null ? tm[3] : "00";
+    return hh + ":" + tm[2] + ":" + ss;
   }
   function exportVal(c, r, carry) {
     var v;
-    if (c === "Anexo") v = r.Anexo || r["Foto cabecera"] || (carry && carry.Anexo) || "";
-    else if (c === "Hora subida") {
-      v = r["Hora subida"] || (carry && carry["Hora subida"]) || "";
-      var tm = String(v).match(/(\d{1,2}:\d{2}(?::\d{2})?)/);
-      if (tm) v = tm[1].length === 5 ? tm[1] + ":00" : tm[1];
-    } else {
-      v = r[c];
-      if (cellEmpty(v) && carry && !cellEmpty(carry[c])) v = carry[c];
+    if (c === "Anexo") {
+      v = r.Anexo || r["Foto cabecera"] || "";
+      if (cellEmpty(v)) return "";
+      return v;
     }
-    if (cellEmpty(v)) {
-      if (FILL_ZERO.indexOf(c) >= 0) return 0;
-      return "-";
+    if (c === "Hora subida") {
+      return exportHora(r["Hora subida"]);
     }
+    if (c === "Observación") {
+      v = r["Observación"];
+      return cellEmpty(v) ? "" : v;
+    }
+    v = r[c];
+    if (cellEmpty(v) && carry && !cellEmpty(carry[c])) v = carry[c];
+    if (cellEmpty(v)) return "";
     return v;
   }
   function exportXls() {
@@ -281,7 +312,7 @@
       }
       prevKey = key;
       FILL_META.forEach(function (k) {
-        var val = k === "Anexo" ? (r.Anexo || r["Foto cabecera"]) : r[k];
+        var val = r[k];
         if (!cellEmpty(val)) carry[k] = val;
       });
       aoa.push(columns.map(function (c) {
@@ -302,6 +333,67 @@
     if (state.page < 1) state.page = 1;
     if (state.page > pages) state.page = pages;
     if (QBE.app && QBE.app.refreshTable) QBE.app.refreshTable();
+  }
+  function closeAsk() {
+    var box = document.getElementById("confirm");
+    if (box) box.hidden = true;
+  }
+  function askDelete(idx) {
+    var row = (state._rows || [])[idx];
+    var box = document.getElementById("confirm");
+    var text = document.getElementById("confirm-text");
+    var yes = document.getElementById("confirm-yes");
+    var no = document.getElementById("confirm-no");
+    if (!row || !box || !yes) return;
+    var nom = row.Nombre || "sin nombre";
+    var mues = row["N° Muestra"] != null && row["N° Muestra"] !== "" ? row["N° Muestra"] : "—";
+    text.textContent = "¿Eliminar N° Muestra " + mues + " de " + nom +
+      (row.Lote ? " · " + row.Lote : "") + "? Solo esa fila.";
+    yes.textContent = "Eliminar";
+    yes.className = "confirm-yes off";
+    yes.onclick = function () { closeAsk(); deleteRow(idx); };
+    no.onclick = closeAsk;
+    box.hidden = false;
+    yes.focus();
+  }
+  function deleteRow(idx) {
+    var row = (state._rows || [])[idx];
+    if (!row) return;
+    var nombre = String(row.Nombre || "").trim();
+    var nMuestra = Number(row["N° Muestra"]);
+    if (!nombre || !isFinite(nMuestra) || nMuestra < 1) {
+      if (QBE.shell && QBE.shell.toast) QBE.shell.toast("Falta Nombre o N° Muestra", true);
+      return;
+    }
+    if (!QBE.api || !QBE.api.deleteRegistro) {
+      if (QBE.shell && QBE.shell.toast) QBE.shell.toast("API sin eliminar. Redeploy Code.gs", true);
+      return;
+    }
+    if (QBE.app && QBE.app.setLoading) QBE.app.setLoading(true, "Eliminando muestra…");
+    else {
+      var load = document.getElementById("loading");
+      var loadText = document.getElementById("loading-text");
+      if (loadText) loadText.textContent = "Eliminando muestra…";
+      if (load) load.hidden = false;
+    }
+    QBE.api.deleteRegistro({
+      nombre: nombre,
+      nMuestra: nMuestra,
+      lote: row.Lote || "",
+      fecha: row.Fecha || "",
+      dni: row.DNI || "",
+      row: row._row || 0,
+    }).then(function () {
+      if (QBE.audit) QBE.audit.add("Eliminar registro", "Muestra " + nMuestra + " · " + nombre);
+      if (QBE.shell && QBE.shell.toast) QBE.shell.toast("Muestra " + nMuestra + " eliminada");
+      if (QBE.app && QBE.app.reload) QBE.app.reload();
+      else if (QBE.app && QBE.app.refresh) QBE.app.refresh();
+    }).catch(function (err) {
+      if (QBE.shell && QBE.shell.toast) QBE.shell.toast((err && err.message) || "No se pudo eliminar", true);
+    }).finally(function () {
+      var load = document.getElementById("loading");
+      if (load) load.hidden = true;
+    });
   }
   function bind() {
     var head = document.getElementById("table-head");
@@ -335,11 +427,25 @@
     if (body && !body._detailBound) {
       body._detailBound = true;
       body.addEventListener("click", function (e) {
-        var btn = e.target.closest("button[data-act='detail']");
-        if (!btn) return;
+        var btn = e.target.closest("button[data-act]");
+        if (!btn || !body.contains(btn)) return;
         var idx = Number(btn.getAttribute("data-row"));
-        var row = (state._rows || [])[idx];
-        if (row) openDetail(row);
+        var act = btn.getAttribute("data-act");
+        if (act === "delete") {
+          askDelete(idx);
+          return;
+        }
+        if (act === "detail") {
+          var row = (state._rows || [])[idx];
+          if (row) openDetail(row);
+        }
+      });
+    }
+    var askBox = document.getElementById("confirm");
+    if (askBox && !askBox._regBound) {
+      askBox._regBound = true;
+      askBox.addEventListener("click", function (e) {
+        if (e.target === askBox) closeAsk();
       });
     }
     var detail = document.getElementById("detail-modal");

@@ -118,6 +118,18 @@
       dni: payload.dni,
     });
   }
+  function deleteRegistro(payload) {
+    payload = payload || {};
+    return post({
+      action: "deleteRegistro",
+      nombre: payload.nombre || "",
+      nMuestra: payload.nMuestra,
+      lote: payload.lote || "",
+      fecha: payload.fecha || "",
+      dni: payload.dni || "",
+      row: payload.row || payload._row || 0,
+    });
+  }
 
   QBE.api = {
     url: apiUrl,
@@ -127,6 +139,7 @@
     setAcceso: setAcceso,
     addEvaluador: addEvaluador,
     deleteEvaluador: deleteEvaluador,
+    deleteRegistro: deleteRegistro,
     meta: meta,
     ping: ping,
     get: get,

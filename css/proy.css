@@ -632,6 +632,70 @@
   border: 0;
   border-radius: 14px;
   background: #fff;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Sticky: Lote · Fecha · DNI · Nombre · N° Muestra (Registros) */
+#tabla-registros {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+#tabla-registros th.sticky-col,
+#tabla-registros td.sticky-col {
+  position: sticky;
+  z-index: 3;
+  background-clip: padding-box;
+}
+#tabla-registros thead th.sticky-col {
+  z-index: 6;
+  background: #2f5d22;
+  color: #fff;
+}
+#tabla-registros tbody td.sticky-col {
+  background: #fff;
+}
+#tabla-registros tbody tr:nth-child(even) td.sticky-col {
+  background: #f6faf2;
+}
+#tabla-registros tbody tr:hover td.sticky-col {
+  background: #eef6e2;
+}
+#tabla-registros .sticky-c1 {
+  left: 0;
+  min-width: 8.75rem;
+  width: 8.75rem;
+  max-width: 8.75rem;
+}
+#tabla-registros .sticky-c2 {
+  left: 8.75rem;
+  min-width: 8.5rem;
+  width: 8.5rem;
+  max-width: 8.5rem;
+}
+#tabla-registros .sticky-c3 {
+  left: 17.25rem;
+  min-width: 6.75rem;
+  width: 6.75rem;
+  max-width: 6.75rem;
+}
+#tabla-registros .sticky-c4 {
+  left: 24rem;
+  min-width: 15rem;
+  width: 15rem;
+  max-width: 15rem;
+}
+#tabla-registros .sticky-c5 {
+  left: 39rem;
+  min-width: 6.5rem;
+  width: 6.5rem;
+  max-width: 6.5rem;
+  box-shadow: 6px 0 10px -6px rgba(17, 24, 39, 0.22);
+  border-right: 1px solid #d7e3c8;
+}
+#tabla-registros thead th.sticky-c5 {
+  box-shadow: 6px 0 10px -6px rgba(0, 0, 0, 0.28);
+  border-right-color: rgba(255, 255, 255, 0.18);
 }
 
 /* Todo el contenido de las tablas va centrado. */
@@ -843,7 +907,7 @@ table.he tr.row-turno[hidden],
 table.he tr.row-lote[hidden] { display: none; }
 table.he tr.row-lote td.lote-cell {
   text-align: left !important;
-  padding-left: 52px;
+  padding-left: 28px;
   white-space: nowrap;
 }
 table.he tr.row-lote .lote-name {
@@ -1272,28 +1336,43 @@ table.he tr.row-total td {
 }
 
 .col-acciones {
-  width: 7.5rem;
-  min-width: 7.5rem;
+  width: 248px;
+  min-width: 248px;
   text-align: center !important;
+  vertical-align: middle;
   white-space: nowrap;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.act-row-reg {
+  display: grid;
+  grid-template-columns: 112px 112px;
+  gap: 8px;
+  justify-content: center;
+  margin: 0 auto;
+  width: max-content;
 }
 .detail-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
+  width: 112px;
   height: 34px;
-  padding: 0 12px;
-  border-radius: 10px;
-  border: 1px solid #d5e3c2;
-  background: #f4f8ef;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid #c9ddb4;
+  background: #f3f8ee;
   color: #2f5d22;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
+  letter-spacing: 0.01em;
   cursor: pointer;
+  box-sizing: border-box;
+  white-space: nowrap;
 }
-.detail-btn svg { width: 15px; height: 15px; }
-.detail-btn:hover { background: #e7f0df; border-color: #b7d98a; }
+.detail-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+.detail-btn:hover { background: #e5f0d8; border-color: #a9c88a; }
 
 .detail-modal {
   position: fixed;
@@ -1599,7 +1678,17 @@ table.he tr.row-total td {
   .detail-grid,
   .detail-grid-compact,
   .detail-trio { grid-template-columns: 1fr; }
-  .detail-btn span { display: none; }
+  .act-row-reg {
+    grid-template-columns: 40px 40px;
+    gap: 6px;
+  }
+  .detail-btn,
+  .act-row-reg .act-btn {
+    width: 40px;
+    padding: 0;
+  }
+  .detail-btn span,
+  .act-row-reg .act-btn span { display: none; }
 }
 
 .user-modal {

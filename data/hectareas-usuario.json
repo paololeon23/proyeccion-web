@@ -1,0 +1,1864 @@
+{
+  "Licapa I": {
+    "M1": {
+      "1": [
+        {
+          "lote": 3,
+          "hectareas": 0.99
+        },
+        {
+          "lote": 4,
+          "hectareas": 0.7
+        },
+        {
+          "lote": 5,
+          "hectareas": 0.28
+        }
+      ],
+      "2": [
+        {
+          "lote": 6,
+          "hectareas": 0.94
+        },
+        {
+          "lote": 7,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 8,
+          "hectareas": 1.1
+        },
+        {
+          "lote": 9,
+          "hectareas": 0.89
+        }
+      ],
+      "3": [
+        {
+          "lote": 10,
+          "hectareas": 0.85
+        },
+        {
+          "lote": 11,
+          "hectareas": 1.14
+        },
+        {
+          "lote": 12,
+          "hectareas": 1.02
+        },
+        {
+          "lote": 13,
+          "hectareas": 1.02
+        }
+      ],
+      "4": [
+        {
+          "lote": 17,
+          "hectareas": 1.1
+        },
+        {
+          "lote": 18,
+          "hectareas": 0.71
+        },
+        {
+          "lote": 19,
+          "hectareas": 0.74
+        }
+      ],
+      "5": [
+        {
+          "lote": 20,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 21,
+          "hectareas": 0.93
+        },
+        {
+          "lote": 22,
+          "hectareas": 0.59
+        },
+        {
+          "lote": 23,
+          "hectareas": 0.67
+        }
+      ],
+      "6": [
+        {
+          "lote": 24,
+          "hectareas": 0.96
+        },
+        {
+          "lote": 25,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 26,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 27,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 28,
+          "hectareas": 0.98
+        }
+      ],
+      "7": [
+        {
+          "lote": 29,
+          "hectareas": 0.36
+        },
+        {
+          "lote": 30,
+          "hectareas": 0.95
+        },
+        {
+          "lote": 31,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 32,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 33,
+          "hectareas": 0.98
+        }
+      ],
+      "8": [
+        {
+          "lote": 34,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 35,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 36,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 37,
+          "hectareas": 0.92
+        },
+        {
+          "lote": 38,
+          "hectareas": 0.98
+        }
+      ],
+      "9": [
+        {
+          "lote": 39,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 40,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 41,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 42,
+          "hectareas": 0.97
+        }
+      ],
+      "10": [
+        {
+          "lote": 43,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 44,
+          "hectareas": 0.93
+        },
+        {
+          "lote": 45,
+          "hectareas": 0.3
+        },
+        {
+          "lote": 46,
+          "hectareas": 0.52
+        }
+      ]
+    },
+    "M2": {
+      "1": [
+        {
+          "lote": 47,
+          "hectareas": 0.34
+        },
+        {
+          "lote": 48,
+          "hectareas": 0.69
+        },
+        {
+          "lote": 49,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 50,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 51,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 52,
+          "hectareas": 0.98
+        }
+      ],
+      "2": [
+        {
+          "lote": 53,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 54,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 55,
+          "hectareas": 0.89
+        },
+        {
+          "lote": 56,
+          "hectareas": 0.61
+        },
+        {
+          "lote": 57,
+          "hectareas": 0.37
+        }
+      ],
+      "3": [
+        {
+          "lote": 58,
+          "hectareas": 0.15
+        },
+        {
+          "lote": 59,
+          "hectareas": 0.81
+        },
+        {
+          "lote": 60,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 61,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 62,
+          "hectareas": 0.63
+        },
+        {
+          "lote": 63,
+          "hectareas": 0.77
+        }
+      ],
+      "4": [
+        {
+          "lote": 64,
+          "hectareas": 0.7
+        },
+        {
+          "lote": 65,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 66,
+          "hectareas": 0.68
+        },
+        {
+          "lote": 67,
+          "hectareas": 0.67
+        },
+        {
+          "lote": 68,
+          "hectareas": 0.65
+        },
+        {
+          "lote": 275,
+          "hectareas": 0.98
+        }
+      ],
+      "5": [
+        {
+          "lote": 69,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 70,
+          "hectareas": 0.97
+        },
+        {
+          "lote": 71,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 72,
+          "hectareas": 0.98
+        }
+      ],
+      "6": [
+        {
+          "lote": 73,
+          "hectareas": 0.97
+        },
+        {
+          "lote": 74,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 75,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 76,
+          "hectareas": 0.98
+        }
+      ],
+      "7": [
+        {
+          "lote": 77,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 78,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 79,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 80,
+          "hectareas": 0.97
+        }
+      ],
+      "8": [
+        {
+          "lote": 81,
+          "hectareas": 0.68
+        },
+        {
+          "lote": 82,
+          "hectareas": 0.68
+        },
+        {
+          "lote": 83,
+          "hectareas": 0.71
+        },
+        {
+          "lote": 84,
+          "hectareas": 0.64
+        },
+        {
+          "lote": 85,
+          "hectareas": 1.02
+        },
+        {
+          "lote": 86,
+          "hectareas": 1.07
+        },
+        {
+          "lote": 276,
+          "hectareas": 0.53
+        }
+      ],
+      "9": [
+        {
+          "lote": 87,
+          "hectareas": 0.97
+        },
+        {
+          "lote": 88,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 89,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 90,
+          "hectareas": 0.89
+        }
+      ],
+      "10": [
+        {
+          "lote": 91,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 92,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 93,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 94,
+          "hectareas": 0.97
+        }
+      ]
+    },
+    "M3": {
+      "1": [
+        {
+          "lote": 95,
+          "hectareas": 0.97
+        },
+        {
+          "lote": 96,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 97,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 98,
+          "hectareas": 0.98
+        }
+      ],
+      "2": [
+        {
+          "lote": 99,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 100,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 101,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 102,
+          "hectareas": 0.97
+        }
+      ],
+      "3": [
+        {
+          "lote": 103,
+          "hectareas": 0.97
+        },
+        {
+          "lote": 104,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 105,
+          "hectareas": 0.98
+        }
+      ],
+      "4": [
+        {
+          "lote": 106,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 107,
+          "hectareas": 0.97
+        },
+        {
+          "lote": 108,
+          "hectareas": 0.98
+        }
+      ],
+      "5": [
+        {
+          "lote": 109,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 110,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 111,
+          "hectareas": 0.97
+        },
+        {
+          "lote": 112,
+          "hectareas": 0.98
+        }
+      ],
+      "6": [
+        {
+          "lote": 113,
+          "hectareas": 0.97
+        },
+        {
+          "lote": 114,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 115,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 116,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 117,
+          "hectareas": 0.97
+        }
+      ],
+      "7": [
+        {
+          "lote": 118,
+          "hectareas": 0.93
+        },
+        {
+          "lote": 119,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 120,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 121,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 122,
+          "hectareas": 0.97
+        }
+      ],
+      "8": [
+        {
+          "lote": 123,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 124,
+          "hectareas": 0.97
+        },
+        {
+          "lote": 125,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 126,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 127,
+          "hectareas": 0.97
+        }
+      ],
+      "9": [
+        {
+          "lote": 128,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 129,
+          "hectareas": 0.92
+        },
+        {
+          "lote": 130,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 131,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 132,
+          "hectareas": 0.97
+        }
+      ],
+      "10": [
+        {
+          "lote": 133,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 134,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 135,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 136,
+          "hectareas": 0.97
+        }
+      ]
+    },
+    "M4": {
+      "1": [
+        {
+          "lote": 137,
+          "hectareas": 0.56
+        },
+        {
+          "lote": 138,
+          "hectareas": 0.54
+        },
+        {
+          "lote": 139,
+          "hectareas": 0.76
+        },
+        {
+          "lote": 140,
+          "hectareas": 0.9
+        },
+        {
+          "lote": 141,
+          "hectareas": 1.12
+        },
+        {
+          "lote": 277,
+          "hectareas": 0.6
+        }
+      ],
+      "2": [
+        {
+          "lote": 142,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 143,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 144,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 145,
+          "hectareas": 0.97
+        }
+      ],
+      "3": [
+        {
+          "lote": 146,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 147,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 148,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 149,
+          "hectareas": 0.97
+        }
+      ],
+      "4": [
+        {
+          "lote": 150,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 151,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 152,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 153,
+          "hectareas": 0.97
+        }
+      ],
+      "5": [
+        {
+          "lote": 154,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 155,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 156,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 157,
+          "hectareas": 0.97
+        }
+      ],
+      "6": [
+        {
+          "lote": 158,
+          "hectareas": 0.87
+        },
+        {
+          "lote": 159,
+          "hectareas": 0.9
+        },
+        {
+          "lote": 160,
+          "hectareas": 0.37
+        },
+        {
+          "lote": 161,
+          "hectareas": 0.28
+        },
+        {
+          "lote": 162,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 163,
+          "hectareas": 0.98
+        }
+      ],
+      "7": [
+        {
+          "lote": 164,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 165,
+          "hectareas": 0.97
+        },
+        {
+          "lote": 166,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 167,
+          "hectareas": 0.98
+        }
+      ],
+      "8": [
+        {
+          "lote": 168,
+          "hectareas": 0.97
+        },
+        {
+          "lote": 169,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 170,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 171,
+          "hectareas": 0.98
+        }
+      ],
+      "9": [
+        {
+          "lote": 172,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 173,
+          "hectareas": 0.93
+        },
+        {
+          "lote": 174,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 175,
+          "hectareas": 0.8
+        },
+        {
+          "lote": 278,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 279,
+          "hectareas": 0.97
+        }
+      ],
+      "10": [
+        {
+          "lote": 176,
+          "hectareas": 0.83
+        },
+        {
+          "lote": 177,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 178,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 179,
+          "hectareas": 0.49
+        },
+        {
+          "lote": 180,
+          "hectareas": 0.63
+        },
+        {
+          "lote": 181,
+          "hectareas": 0.22
+        }
+      ]
+    },
+    "M5": {
+      "1": [
+        {
+          "lote": 182,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 183,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 184,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 185,
+          "hectareas": 0.97
+        }
+      ],
+      "2": [
+        {
+          "lote": 186,
+          "hectareas": 0.97
+        },
+        {
+          "lote": 187,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 188,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 189,
+          "hectareas": 0.98
+        }
+      ],
+      "3": [
+        {
+          "lote": 190,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 191,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 192,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 193,
+          "hectareas": 0.97
+        }
+      ],
+      "4": [
+        {
+          "lote": 194,
+          "hectareas": 0.97
+        },
+        {
+          "lote": 195,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 196,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 197,
+          "hectareas": 0.98
+        }
+      ],
+      "9": [
+        {
+          "lote": 217,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 218,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 219,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 220,
+          "hectareas": 0.97
+        }
+      ],
+      "10": [
+        {
+          "lote": 221,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 222,
+          "hectareas": 0.73
+        }
+      ],
+      "11": [
+        {
+          "lote": 225,
+          "hectareas": 0.87
+        },
+        {
+          "lote": 230,
+          "hectareas": 0.93
+        },
+        {
+          "lote": 234,
+          "hectareas": 0.98
+        }
+      ],
+      "12": [
+        {
+          "lote": 231,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 235,
+          "hectareas": 0.98
+        }
+      ],
+      "13": [
+        {
+          "lote": 232,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 236,
+          "hectareas": 0.98
+        }
+      ],
+      "14": [
+        {
+          "lote": 233,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 237,
+          "hectareas": 0.98
+        }
+      ],
+      "15": [
+        {
+          "lote": 238,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 239,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 240,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 241,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 242,
+          "hectareas": 0.81
+        },
+        {
+          "lote": 243,
+          "hectareas": 0.31
+        }
+      ],
+      "16": [
+        {
+          "lote": 244,
+          "hectareas": 0.9
+        },
+        {
+          "lote": 245,
+          "hectareas": 0.37
+        },
+        {
+          "lote": 246,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 247,
+          "hectareas": 0.98
+        }
+      ]
+    }
+  },
+  "Licapa II": {
+    "M10": {
+      "8": [
+        {
+          "lote": 213,
+          "hectareas": 2.13
+        },
+        {
+          "lote": 214,
+          "hectareas": 2.48
+        },
+        {
+          "lote": 215,
+          "hectareas": 2.23
+        },
+        {
+          "lote": 216,
+          "hectareas": 2.16
+        }
+      ],
+      "10": [
+        {
+          "lote": 223,
+          "hectareas": 1.12
+        },
+        {
+          "lote": 224,
+          "hectareas": 1.16
+        }
+      ]
+    },
+    "M6": {
+      "1": [
+        {
+          "lote": 225,
+          "hectareas": 0.11
+        },
+        {
+          "lote": 226,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 227,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 228,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 229,
+          "hectareas": 0.98
+        }
+      ],
+      "7": [
+        {
+          "lote": 254,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 255,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 256,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 257,
+          "hectareas": 0.97
+        }
+      ],
+      "8": [
+        {
+          "lote": 258,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 259,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 260,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 261,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 262,
+          "hectareas": 1.0
+        }
+      ],
+      "9": [
+        {
+          "lote": 263,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 266,
+          "hectareas": 1.0
+        },
+        {
+          "lote": 267,
+          "hectareas": 0.76
+        },
+        {
+          "lote": 268,
+          "hectareas": 0.74
+        }
+      ],
+      "10": [
+        {
+          "lote": 269,
+          "hectareas": 0.75
+        },
+        {
+          "lote": 270,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 271,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 272,
+          "hectareas": 0.63
+        },
+        {
+          "lote": 273,
+          "hectareas": 0.65
+        },
+        {
+          "lote": 274,
+          "hectareas": 0.98
+        }
+      ]
+    },
+    "M7": {
+      "1": [
+        {
+          "lote": 280,
+          "hectareas": 0.94
+        },
+        {
+          "lote": 281,
+          "hectareas": 0.97
+        },
+        {
+          "lote": 282,
+          "hectareas": 0.99
+        },
+        {
+          "lote": 283,
+          "hectareas": 0.97
+        },
+        {
+          "lote": 284,
+          "hectareas": 0.34
+        }
+      ],
+      "2": [
+        {
+          "lote": 285,
+          "hectareas": 0.64
+        },
+        {
+          "lote": 286,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 287,
+          "hectareas": 0.36
+        },
+        {
+          "lote": 288,
+          "hectareas": 0.5
+        },
+        {
+          "lote": 289,
+          "hectareas": 0.47
+        },
+        {
+          "lote": 290,
+          "hectareas": 0.29
+        },
+        {
+          "lote": 291,
+          "hectareas": 0.13
+        }
+      ],
+      "3": [
+        {
+          "lote": 292,
+          "hectareas": 0.97
+        },
+        {
+          "lote": 293,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 294,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 295,
+          "hectareas": 0.98
+        }
+      ],
+      "4": [
+        {
+          "lote": 296,
+          "hectareas": 0.94
+        },
+        {
+          "lote": 297,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 298,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 299,
+          "hectareas": 0.97
+        }
+      ],
+      "5": [
+        {
+          "lote": 300,
+          "hectareas": 0.97
+        },
+        {
+          "lote": 301,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 302,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 303,
+          "hectareas": 0.98
+        }
+      ],
+      "6": [
+        {
+          "lote": 304,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 305,
+          "hectareas": 0.92
+        },
+        {
+          "lote": 306,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 307,
+          "hectareas": 0.75
+        }
+      ],
+      "7": [
+        {
+          "lote": 308,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 309,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 310,
+          "hectareas": 0.73
+        },
+        {
+          "lote": 311,
+          "hectareas": 0.3
+        },
+        {
+          "lote": 312,
+          "hectareas": 0.13
+        }
+      ],
+      "8": [
+        {
+          "lote": 313,
+          "hectareas": 0.41
+        },
+        {
+          "lote": 314,
+          "hectareas": 0.91
+        },
+        {
+          "lote": 315,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 316,
+          "hectareas": 0.98
+        }
+      ],
+      "9": [
+        {
+          "lote": 317,
+          "hectareas": 0.37
+        },
+        {
+          "lote": 318,
+          "hectareas": 1.27
+        },
+        {
+          "lote": 319,
+          "hectareas": 0.21
+        },
+        {
+          "lote": 320,
+          "hectareas": 0.89
+        },
+        {
+          "lote": 321,
+          "hectareas": 0.9
+        }
+      ],
+      "10": [
+        {
+          "lote": 322,
+          "hectareas": 1.12
+        },
+        {
+          "lote": 323,
+          "hectareas": 1.19
+        },
+        {
+          "lote": 421,
+          "hectareas": 1.14
+        }
+      ]
+    },
+    "M8": {
+      "1": [
+        {
+          "lote": 324,
+          "hectareas": 0.95
+        },
+        {
+          "lote": 325,
+          "hectareas": 0.67
+        },
+        {
+          "lote": 326,
+          "hectareas": 1.0
+        },
+        {
+          "lote": 327,
+          "hectareas": 0.46
+        },
+        {
+          "lote": 328,
+          "hectareas": 0.92
+        },
+        {
+          "lote": "328b",
+          "hectareas": 0.31
+        },
+        {
+          "lote": 422,
+          "hectareas": 0.12
+        }
+      ],
+      "2": [
+        {
+          "lote": 329,
+          "hectareas": 0.97
+        },
+        {
+          "lote": 330,
+          "hectareas": 0.97
+        },
+        {
+          "lote": 331,
+          "hectareas": 0.97
+        },
+        {
+          "lote": 332,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 333,
+          "hectareas": 0.98
+        }
+      ],
+      "3": [
+        {
+          "lote": 334,
+          "hectareas": 0.97
+        },
+        {
+          "lote": 335,
+          "hectareas": 0.97
+        },
+        {
+          "lote": 336,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 337,
+          "hectareas": 0.98
+        }
+      ],
+      "4": [
+        {
+          "lote": 338,
+          "hectareas": 1.0
+        },
+        {
+          "lote": 339,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 340,
+          "hectareas": 0.97
+        },
+        {
+          "lote": 341,
+          "hectareas": 1.0
+        },
+        {
+          "lote": 342,
+          "hectareas": 0.97
+        }
+      ],
+      "5": [
+        {
+          "lote": 343,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 344,
+          "hectareas": 0.93
+        },
+        {
+          "lote": 345,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 346,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 347,
+          "hectareas": 0.98
+        }
+      ],
+      "6": [
+        {
+          "lote": 348,
+          "hectareas": 1.07
+        },
+        {
+          "lote": 349,
+          "hectareas": 1.05
+        },
+        {
+          "lote": 350,
+          "hectareas": 0.83
+        },
+        {
+          "lote": 351,
+          "hectareas": 0.6
+        }
+      ],
+      "7": [
+        {
+          "lote": 352,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 353,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 354,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 355,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 356,
+          "hectareas": 0.45
+        },
+        {
+          "lote": 402,
+          "hectareas": 0.97
+        }
+      ],
+      "8": [
+        {
+          "lote": 357,
+          "hectareas": 0.94
+        },
+        {
+          "lote": 358,
+          "hectareas": 0.15
+        },
+        {
+          "lote": 359,
+          "hectareas": 0.85
+        },
+        {
+          "lote": 360,
+          "hectareas": 0.59
+        }
+      ],
+      "9": [
+        {
+          "lote": 361,
+          "hectareas": 0.34
+        },
+        {
+          "lote": 362,
+          "hectareas": 1.08
+        },
+        {
+          "lote": 363,
+          "hectareas": 0.29
+        },
+        {
+          "lote": 364,
+          "hectareas": 1.1
+        },
+        {
+          "lote": 365,
+          "hectareas": 0.89
+        },
+        {
+          "lote": 366,
+          "hectareas": 0.5
+        }
+      ],
+      "10": [
+        {
+          "lote": 367,
+          "hectareas": 0.62
+        },
+        {
+          "lote": 368,
+          "hectareas": 0.63
+        },
+        {
+          "lote": 369,
+          "hectareas": 0.28
+        },
+        {
+          "lote": 370,
+          "hectareas": 0.64
+        },
+        {
+          "lote": 371,
+          "hectareas": 0.43
+        }
+      ]
+    },
+    "M9": {
+      "1": [
+        {
+          "lote": 372,
+          "hectareas": 0.82
+        },
+        {
+          "lote": 373,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 374,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 375,
+          "hectareas": 0.55
+        },
+        {
+          "lote": 376,
+          "hectareas": 1.26
+        }
+      ],
+      "2": [
+        {
+          "lote": 377,
+          "hectareas": 0.99
+        },
+        {
+          "lote": 378,
+          "hectareas": 0.67
+        },
+        {
+          "lote": 379,
+          "hectareas": 0.22
+        },
+        {
+          "lote": 380,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 381,
+          "hectareas": 0.95
+        }
+      ],
+      "3": [
+        {
+          "lote": 382,
+          "hectareas": 0.78
+        },
+        {
+          "lote": 383,
+          "hectareas": 0.33
+        },
+        {
+          "lote": 384,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 385,
+          "hectareas": 0.98
+        }
+      ],
+      "4": [
+        {
+          "lote": 386,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 387,
+          "hectareas": 0.97
+        },
+        {
+          "lote": 388,
+          "hectareas": 0.3
+        },
+        {
+          "lote": 389,
+          "hectareas": 0.2
+        },
+        {
+          "lote": 390,
+          "hectareas": 0.32
+        },
+        {
+          "lote": 391,
+          "hectareas": 0.5
+        },
+        {
+          "lote": 392,
+          "hectareas": 0.64
+        }
+      ],
+      "5": [
+        {
+          "lote": 393,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 394,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 395,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 396,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 397,
+          "hectareas": 0.92
+        }
+      ],
+      "6": [
+        {
+          "lote": 398,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 399,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 400,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 401,
+          "hectareas": 0.97
+        }
+      ],
+      "7": [
+        {
+          "lote": 403,
+          "hectareas": 0.97
+        },
+        {
+          "lote": 404,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 405,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 406,
+          "hectareas": 0.98
+        }
+      ],
+      "8": [
+        {
+          "lote": 407,
+          "hectareas": 0.97
+        },
+        {
+          "lote": 408,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 409,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 410,
+          "hectareas": 0.98
+        }
+      ],
+      "9": [
+        {
+          "lote": 411,
+          "hectareas": 0.8
+        },
+        {
+          "lote": 412,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 413,
+          "hectareas": 0.17
+        },
+        {
+          "lote": 414,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 415,
+          "hectareas": 0.9
+        },
+        {
+          "lote": 416,
+          "hectareas": 0.54
+        }
+      ],
+      "10": [
+        {
+          "lote": 417,
+          "hectareas": 0.45
+        },
+        {
+          "lote": 418,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 419,
+          "hectareas": 1.36
+        },
+        {
+          "lote": 420,
+          "hectareas": 0.72
+        }
+      ]
+    }
+  },
+  "Licapa III": {
+    "M10": {
+      "5": [
+        {
+          "lote": 198,
+          "hectareas": 1.96
+        },
+        {
+          "lote": 199,
+          "hectareas": 1.9
+        },
+        {
+          "lote": 200,
+          "hectareas": 1.9
+        },
+        {
+          "lote": 201,
+          "hectareas": 1.8
+        }
+      ],
+      "6": [
+        {
+          "lote": 203,
+          "hectareas": 0.98
+        },
+        {
+          "lote": 204,
+          "hectareas": 0.84
+        },
+        {
+          "lote": 205,
+          "hectareas": 0.98
+        }
+      ],
+      "7": [
+        {
+          "lote": 202,
+          "hectareas": 1.9
+        },
+        {
+          "lote": 206,
+          "hectareas": 1.9
+        },
+        {
+          "lote": 207,
+          "hectareas": 1.94
+        }
+      ],
+      "11": [
+        {
+          "lote": "208 B",
+          "hectareas": 1.9
+        },
+        {
+          "lote": "208A",
+          "hectareas": 0.46
+        },
+        {
+          "lote": 209,
+          "hectareas": 1.94
+        },
+        {
+          "lote": 210,
+          "hectareas": 0.7
+        },
+        {
+          "lote": 211,
+          "hectareas": 2.0
+        },
+        {
+          "lote": 212,
+          "hectareas": 1.9
+        }
+      ]
+    }
+  }
+}
