@@ -110,10 +110,44 @@
       "Turno", "Lotes", "Semana", "Area"].forEach(function (k) {
       if (out[k] !== "" && out[k] != null) out[k] = asNumber(out[k]) || out[k];
     });
+    if (out.Area === "" || out.Area == null) {
+      var filled = lookupArea(out);
+      if (filled != null && isFinite(filled)) out.Area = filled;
+    }
     out._q = fold([out.Lote, out.DNI, out.Nombre, out.Modulo, out.Variedad, out.Campaña, out.Etapa].join(" "));
     var sheetRow = Number(rec._row || rec.row || rec._sheetRow || 0);
     if (sheetRow > 1) out._row = sheetRow;
     return out;
+  }
+  /** Completa Area vacía desde catálogo (Modulo+Turno+Lote). */
+  function lookupArea(row) {
+    var pack = QBE.loteAreas || {};
+    var byKey = pack.byModTurnoLote || {};
+    var byLote = pack.byLote || {};
+    var mod = String(row.Modulo || "").trim().toUpperCase();
+    var tur = String(row.Turno != null ? row.Turno : "").trim();
+    var loteNum = String(row.Lotes != null ? row.Lotes : "").replace(/\s+/g, "").toUpperCase();
+    if (!loteNum) {
+      var m = String(row.Lote || "").match(/(?:LT|L)0*(\d+[A-Z]?)\s*$/i);
+      if (m) loteNum = String(m[1]).toUpperCase();
+    }
+    if (!loteNum) return null;
+    if (mod && tur !== "") {
+      var hit = byKey[mod + "|" + tur + "|" + loteNum];
+      if (hit != null && hit !== "") return Number(hit);
+    }
+    /* sin turno: probar cualquier key del mismo módulo+lote */
+    if (mod) {
+      var prefix = mod + "|";
+      var suffix = "|" + loteNum;
+      var k;
+      for (k in byKey) {
+        if (!Object.prototype.hasOwnProperty.call(byKey, k)) continue;
+        if (k.indexOf(prefix) === 0 && k.slice(-suffix.length) === suffix) return Number(byKey[k]);
+      }
+    }
+    if (byLote[loteNum] != null && byLote[loteNum] !== "") return Number(byLote[loteNum]);
+    return null;
   }
   function canonLote(raw) {
     var s = String(raw == null ? "" : raw).trim().toUpperCase().replace(/\s+/g, "");

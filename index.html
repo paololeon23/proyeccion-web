@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="css/styles.css?v=proy14" />
     <link rel="stylesheet" href="css/dashboard.css?v=proy14" />
     <link rel="stylesheet" href="css/responsive.css?v=proy14" />
-    <link rel="stylesheet" href="css/proy.css?v=proy65" />
+    <link rel="stylesheet" href="css/proy.css?v=proy72" />
   </head>
   <body>
     <div id="backdrop" class="backdrop"></div>
@@ -34,6 +34,10 @@
         <a href="#/escaneadas">
           <svg viewBox="0 0 24 24"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M12 17.5V11"/><path d="M12 11c0-3.2 2.4-5.2 5.6-5.4-.5 3.2-2.4 5.4-5.6 5.4z"/><path d="M12 12.6c0-2.4-2-4.2-4.6-4.4.5 2.4 2.2 4.4 4.6 4.4z"/></svg>
           Plantas escaneadas
+        </a>
+        <a href="#/reporteria">
+          <svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16"/><path d="M8 16v-5M12 16V7M16 16v-3"/><path d="M7 9h3M11 11h3M15 13h3"/></svg>
+          Reportería
         </a>
         <a href="#/usuarios">
           <svg viewBox="0 0 24 24"><path d="M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1"/><circle cx="9.5" cy="7" r="3.5"/><path d="M19 8v6M22 11h-6"/></svg>
@@ -195,6 +199,83 @@
           </section>
         </section>
 
+        <section class="page" data-page="reporteria">
+          <div class="page-title">
+            <h1>Reportería</h1>
+            <p>Avance de muestras por evaluador, con rango de fechas y export Excel.</p>
+          </div>
+          <section class="filters-bar report-filters" id="report-filters" aria-label="Filtros de reportería">
+            <label class="field">
+              <span>Desde</span>
+              <input id="rep-desde" type="date" aria-label="Fecha desde" />
+            </label>
+            <label class="field">
+              <span>Hasta</span>
+              <input id="rep-hasta" type="date" aria-label="Fecha hasta" />
+            </label>
+            <label class="field field-evaluador field-rep-evaluador">
+              <span>Evaluador</span>
+              <select id="rep-evaluador" aria-label="Evaluador"></select>
+            </label>
+            <div class="field field-action">
+              <span>&nbsp;</span>
+              <button type="button" class="filter-btn" id="rep-aplicar">Filtrar</button>
+            </div>
+            <div class="field field-action">
+              <span>&nbsp;</span>
+              <button type="button" class="filter-clear" id="rep-limpiar" aria-label="Desfiltrar" title="Desfiltrar">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" data-lucide="filter-x" aria-hidden="true" class="lucide lucide-filter-x"><path d="M13.013 3H2l8 9.46V19l4 2v-8.54l.9-1.055"></path><path d="m22 3-5 5"></path><path d="m17 3 5 5"></path></svg>
+              </button>
+            </div>
+            <div class="field field-action">
+              <span>&nbsp;</span>
+              <button type="button" class="ghost-btn" id="rep-xls">Excel</button>
+            </div>
+          </section>
+          <div class="report-grid">
+            <section class="table-panel report-card">
+              <div class="table-head">
+                <h2>Muestras por usuario</h2>
+              </div>
+              <div class="report-chart-wrap">
+                <canvas id="report-chart-users" height="280" aria-label="Gráfico muestras por usuario"></canvas>
+              </div>
+            </section>
+            <section class="table-panel report-card">
+              <div class="table-head">
+                <h2>Avance por día</h2>
+              </div>
+              <div class="report-chart-wrap">
+                <canvas id="report-chart-days" height="280" aria-label="Gráfico avance diario"></canvas>
+              </div>
+            </section>
+          </div>
+          <section class="table-panel table-panel-lg">
+            <div class="table-head">
+              <h2>Detalle por evaluador</h2>
+              <div class="table-tools">
+                <span class="report-range" id="report-range-label"></span>
+              </div>
+            </div>
+            <div class="table-scroll table-scroll-lg">
+              <table class="he report-table">
+                <thead>
+                  <tr>
+                    <th>DNI</th>
+                    <th class="col-nombre">Evaluador</th>
+                    <th class="num">Muestras</th>
+                    <th class="num">Lotes</th>
+                    <th class="num">Días activos</th>
+                    <th>Desde</th>
+                    <th>Hasta</th>
+                  </tr>
+                </thead>
+                <tbody id="report-body"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
         <section class="page" data-page="usuarios">
           <div class="page-title">
             <h1>Usuarios activos</h1>
@@ -341,17 +422,20 @@
 
     <script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
     <script src="js/config.js?v=proy48"></script>
+    <script src="js/lotes-area-map.js?v=proy67"></script>
     <script src="js/performance.js?v=proy43"></script>
     <script src="js/audit.js?v=proy48"></script>
-    <script src="js/data.js?v=proy64"></script>
-    <script src="js/filters.js?v=proy50"></script>
+    <script src="js/data.js?v=proy67"></script>
+    <script src="js/filters.js?v=proy68"></script>
     <script src="js/table.js?v=proy64"></script>
-    <script src="js/summary.js?v=proy65"></script>
+    <script src="js/summary.js?v=proy74"></script>
     <script src="js/users.js?v=proy61"></script>
+    <script src="js/reports.js?v=proy72"></script>
     <script src="js/api.js?v=proy62"></script>
-    <script src="js/app.js?v=proy49"></script>
+    <script src="js/app.js?v=proy66"></script>
     <script src="js/auth.js?v=proy14"></script>
-    <script src="js/shell.js?v=proy28"></script>
+    <script src="js/shell.js?v=proy66"></script>
   </body>
 </html>

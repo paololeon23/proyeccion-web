@@ -64,10 +64,14 @@
     if (h === "#/usuarios" && QBE.users) {
       QBE.users.bind();
     }
+    if (h === "#/reporteria" && QBE.reports) {
+      QBE.reports.bind();
+    }
     if (QBE.audit && route.last && route.last !== h) {
       var names = {
         "#/registros": "Registros",
         "#/escaneadas": "Plantas escaneadas",
+        "#/reporteria": "Reportería",
         "#/usuarios": "Usuarios activos",
         "#/movimientos": "Movimientos del sistema",
       };

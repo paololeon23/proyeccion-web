@@ -265,5 +265,15 @@
     }
   }
 
-  QBE.filters = { current: current, render: render, bind: bind, clearFilters: clearFilters };
+  QBE.filters = {
+    current: current,
+    render: render,
+    bind: bind,
+    clearFilters: clearFilters,
+    mountDate: mountDate,
+    setDateValue: setDateValue,
+    syncPick: syncPick,
+    fillSelect: fillSelect,
+    formatES: formatES,
+  };
 })(typeof window !== "undefined" ? window : globalThis);

@@ -164,6 +164,7 @@
       filtered = QBE.data.filterRecords(pack.records, f);
       QBE.table.render(filtered, { colores: f.colores });
       if (!opts.skipSummary && QBE.summary) QBE.summary.render(filtered);
+      if (QBE.reports && QBE.reports.render) QBE.reports.render(pack.records || []);
       var chip = $("escaneadas-chip");
       if (chip) chip.textContent = "Filtros: " + filterLabel() + ".";
     } finally {
