@@ -214,8 +214,8 @@
 .dash-head { padding: 2px 0 12px; }
 
 .filters {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 12px 14px;
   align-items: end;
   width: 100%;
@@ -292,9 +292,20 @@
 
 .field { position: relative; }
 
-.field-evaluador {
+.filters > .field {
+  flex: 0 0 auto;
+  width: 140px;
   min-width: 0;
-  max-width: 180px;
+}
+.filters > .field-modulo { width: 86px; }
+.filters > .field-etapa { width: 94px; }
+.filters > .field-semana { width: 100px; }
+.filters > .field-tipo { width: 128px; }
+.filters > .field-evaluador { width: 168px; max-width: none; }
+.filters > .field-fecha { width: 148px; }
+.filters > .field-action {
+  width: auto;
+  flex: 0 0 auto;
 }
 
 .field select,
@@ -1257,9 +1268,14 @@ table.he tr.row-total td {
   box-shadow: 0 8px 22px rgba(17, 24, 39, 0.04);
 }
 .report-filters .field-rep-evaluador {
-  flex: 1 1 280px;
-  min-width: 240px;
-  max-width: 420px;
+  flex: 1 1 240px;
+  min-width: 200px;
+  max-width: 360px;
+}
+.report-filters .field-rep-tipo {
+  flex: 0 1 140px;
+  min-width: 120px;
+  max-width: 150px;
 }
 .report-filters .field-rep-evaluador .pick-btn {
   white-space: nowrap;
@@ -1981,13 +1997,19 @@ table.he tr.row-total td {
 
 .page-title h1 { letter-spacing: -0.03em; }
 
-@media (max-width: 1180px) {
-  .filters { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
-}
-
 @media (max-width: 900px) {
   .workspace { padding: 8px 14px 20px; }
-  .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .filters > .field,
+  .filters > .field-modulo,
+  .filters > .field-etapa,
+  .filters > .field-semana,
+  .filters > .field-tipo,
+  .filters > .field-evaluador,
+  .filters > .field-fecha {
+    width: calc(50% - 7px);
+    max-width: none;
+  }
+  .filters > .field-action { width: 100%; }
   .table-tools { width: 100%; }
   .table-tools input { min-width: 0; flex: 1; }
 }

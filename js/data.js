@@ -114,7 +114,8 @@
       var filled = lookupArea(out);
       if (filled != null && isFinite(filled)) out.Area = filled;
     }
-    out._q = fold([out.Lote, out.DNI, out.Nombre, out.Modulo, out.Variedad, out.Campaña, out.Etapa].join(" "));
+    out.Tipo = canonTipo(out.Tipo);
+    out._q = fold([out.Lote, out.DNI, out.Nombre, out.Modulo, out.Variedad, out.Campaña, out.Etapa, out.Tipo].join(" "));
     var sheetRow = Number(rec._row || rec.row || rec._sheetRow || 0);
     if (sheetRow > 1) out._row = sheetRow;
     return out;
@@ -213,6 +214,13 @@
     var m = s.match(/^M0*(\d+)$/i);
     return m ? "M" + m[1] : s;
   }
+  function canonTipo(v) {
+    var s = fold(v);
+    if (!s) return "";
+    if (s.indexOf("fenolog") >= 0) return "Fenología";
+    if (s.indexOf("proyeccion") >= 0) return "Proyecciones";
+    return String(v == null ? "" : v).replace(/\s+/g, " ").trim();
+  }
   function matchesFilter(rec, f) {
     if (f.modulo && f.modulo !== "*" && canonModulo(rec.Modulo) !== canonModulo(f.modulo)) return false;
     if (f.evaluador && f.evaluador !== "*") {
@@ -221,6 +229,9 @@
         : String(f.evaluador).split("||");
       evList = evList.map(function (n) { return fold(n); }).filter(Boolean);
       if (evList.length && evList.indexOf(fold(rec.Nombre)) < 0) return false;
+    }
+    if (f.tipo && f.tipo !== "*") {
+      if (canonTipo(rec.Tipo) !== canonTipo(f.tipo)) return false;
     }
     if (f.etapa && f.etapa !== "*" && fold(rec.Etapa) !== fold(f.etapa)) return false;
     if (f.semana && f.semana !== "*" && String(rec.Semana) !== String(f.semana)) return false;
@@ -283,5 +294,6 @@
     optionsFrom: optionsFrom,
     filterRecords: filterRecords,
     sortRecords: sortRecords,
+    canonTipo: canonTipo,
   };
 })(typeof window !== "undefined" ? window : globalThis);

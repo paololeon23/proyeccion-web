@@ -158,12 +158,14 @@
     var b = document.getElementById("q");
     return String((a && a.value) || (b && b.value) || "").trim();
   }
+  var TIPO_OPTS = ["Fenología", "Proyecciones"];
   function current() {
     return {
       desde: val("f-desde"),
       hasta: val("f-hasta"),
       modulo: val("f-modulo") || "*",
       evaluador: pickFilterValue("f-evaluador"),
+      tipo: val("f-tipo") || "*",
       etapa: val("f-etapa") || "*",
       semana: val("f-semana") || "*",
       q: searchValue(),
@@ -173,6 +175,7 @@
   function render(options) {
     fillSelect("f-modulo", options.modulos, "Todos");
     fillSelect("f-evaluador", options.evaluadores, "Todos");
+    fillSelect("f-tipo", TIPO_OPTS, "Todas");
     fillSelect("f-etapa", options.etapas, "Todas");
     fillSelect("f-semana", options.semanas, "Todas");
   }
@@ -210,7 +213,7 @@
     });
   }
   function clearFilters(onChange) {
-    ["f-modulo", "f-evaluador", "f-etapa", "f-semana"].forEach(function (id) {
+    ["f-modulo", "f-evaluador", "f-tipo", "f-etapa", "f-semana"].forEach(function (id) {
       var el = document.getElementById(id);
       if (!el) return;
       if (isMultiPick(el)) setMultiValues(el, ["*"]);
@@ -323,12 +326,19 @@
       if (!el) return;
       el.addEventListener("change", onChange);
     });
-    // Evaluador multi: aplicar al marcar/desmarcar (Registros + Escaneadas).
+    // Evaluador multi / Tipo: aplicar al cambiar (Registros + Escaneadas).
     var fEv = document.getElementById("f-evaluador");
     if (fEv && !fEv._multiBound) {
       fEv._multiBound = true;
       if (fEv.getAttribute("data-multi") !== "1") fEv.setAttribute("data-multi", "1");
       fEv.addEventListener("change", function () {
+        if (typeof onChange === "function") onChange({ apply: false });
+      });
+    }
+    var fTipo = document.getElementById("f-tipo");
+    if (fTipo && !fTipo._tipoBound) {
+      fTipo._tipoBound = true;
+      fTipo.addEventListener("change", function () {
         if (typeof onChange === "function") onChange({ apply: false });
       });
     }
@@ -371,5 +381,6 @@
     pickFilterValue: pickFilterValue,
     getMultiValues: getMultiValues,
     setMultiValues: setMultiValues,
+    TIPO_OPTS: TIPO_OPTS,
   };
 })(typeof window !== "undefined" ? window : globalThis);

@@ -62,6 +62,7 @@
         bits.push("Evaluador " + f.evaluador);
       }
     }
+    one("f-tipo", "Tipo");
     one("f-etapa", "Etapa");
     one("f-semana", "Semana");
     if (f.desde) bits.push("Desde " + f.desde);

@@ -258,9 +258,9 @@
     if (count) {
       var hasta = Math.min(from + pageRows.length, sorted.length);
       if (!sorted.length) {
-        count.innerHTML = '<strong>0</strong><span>registros</span>';
+        count.innerHTML = "<strong>0</strong> <span>registros</span>";
       } else {
-        count.innerHTML = "<strong>" + (from + 1) + "-" + hasta + " de " + sorted.length.toLocaleString("es-PE") + "</strong><span>registros</span>";
+        count.innerHTML = "<strong>" + (from + 1) + "-" + hasta + " de " + sorted.length.toLocaleString("es-PE") + "</strong> <span>registros</span>";
       }
     }
     paintPager(pager, pages);

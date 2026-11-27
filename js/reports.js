@@ -46,11 +46,21 @@
       var e = document.getElementById("rep-evaluador");
       ev = e ? String(e.value || "*").trim() : "*";
     }
+    var t = document.getElementById("rep-tipo");
     return {
       desde: a ? String(a.value || "").trim() : "",
       hasta: b ? String(b.value || "").trim() : "",
       evaluador: ev,
+      tipo: t ? String(t.value || "*").trim() || "*" : "*",
     };
+  }
+  function canonTipo(v) {
+    if (QBE.data && QBE.data.canonTipo) return QBE.data.canonTipo(v);
+    var s = fold(v);
+    if (!s) return "";
+    if (s.indexOf("fenolog") >= 0) return "Fenología";
+    if (s.indexOf("proyeccion") >= 0) return "Proyecciones";
+    return String(v == null ? "" : v).replace(/\s+/g, " ").trim();
   }
   function filterRecords(records) {
     var r = range();
@@ -60,6 +70,7 @@
         .map(function (n) { return fold(n); })
         .filter(Boolean);
     }
+    var tipoWant = r.tipo && r.tipo !== "*" ? canonTipo(r.tipo) : "";
     return (records || []).filter(function (row) {
       var f = dateKey(row.Fecha);
       if (!f) return false;
@@ -68,6 +79,7 @@
       if (evList && evList.length) {
         if (evList.indexOf(fold(row.Nombre)) < 0) return false;
       }
+      if (tipoWant && canonTipo(row.Tipo) !== tipoWant) return false;
       return true;
     });
   }
@@ -133,6 +145,7 @@
       r.desde || "",
       r.hasta || "",
       evSig,
+      r.tipo || "*",
       pack.total,
       pack.totalDias,
       pack.users.map(function (u) { return u.dni + ":" + u.muestras; }).join(","),
@@ -150,6 +163,8 @@
       return a.localeCompare(b, "es");
     });
     QBE.filters.fillSelect("rep-evaluador", list, "Todos");
+    var tipos = (QBE.filters.TIPO_OPTS || ["Fenología", "Proyecciones"]).slice();
+    QBE.filters.fillSelect("rep-tipo", tipos, "Todas");
   }
   function paintRangeLabel(r, pack) {
     var label = document.getElementById("report-range-label");
@@ -160,7 +175,8 @@
     if (r.evaluador && r.evaluador !== "*") {
       ev = Array.isArray(r.evaluador) ? (r.evaluador.length + " seleccionados") : r.evaluador;
     }
-    label.textContent = desde + " → " + hasta + " · " + ev + " · " + (pack.total || 0) + " muestras";
+    var tipo = r.tipo && r.tipo !== "*" ? r.tipo : "Todas";
+    label.textContent = desde + " → " + hasta + " · " + ev + " · " + tipo + " · " + (pack.total || 0) + " muestras";
   }
   function paintTable(users, r, pack) {
     var body = document.getElementById("report-body");
@@ -389,6 +405,11 @@
       else ev.value = "*";
       if (QBE.filters && QBE.filters.syncPick) QBE.filters.syncPick(ev);
     }
+    var tipo = document.getElementById("rep-tipo");
+    if (tipo) {
+      tipo.value = "*";
+      if (QBE.filters && QBE.filters.syncPick) QBE.filters.syncPick(tipo);
+    }
     lastSig = "";
     if (QBE.app && QBE.app.pack) render(QBE.app.pack().records || [], { force: true });
     if (QBE.audit) QBE.audit.add("Desfiltrar reportería", iso + " → " + iso);
@@ -402,6 +423,7 @@
       var clear = document.getElementById("rep-limpiar");
       var xls = document.getElementById("rep-xls");
       var ev = document.getElementById("rep-evaluador");
+      var tipoEl = document.getElementById("rep-tipo");
       if (apply) {
         apply.addEventListener("click", function () {
           lastSig = "";
@@ -413,7 +435,8 @@
               (r.desde || "…") + " → " + (r.hasta || "…") +
               (r.evaluador && r.evaluador !== "*"
                 ? " · " + (Array.isArray(r.evaluador) ? r.evaluador.join(", ") : r.evaluador)
-                : "")
+                : "") +
+              (r.tipo && r.tipo !== "*" ? " · " + r.tipo : "")
             );
           }
         });
@@ -424,6 +447,17 @@
         if (ev.getAttribute("data-multi") !== "1") ev.setAttribute("data-multi", "1");
         if (QBE.filters && QBE.filters.syncPick) QBE.filters.syncPick(ev);
         ev.addEventListener("change", function () {
+          lastSig = "";
+          if (QBE.app && QBE.app.pack) render(QBE.app.pack().records || [], { force: true });
+        });
+      }
+      if (tipoEl) {
+        if (QBE.filters && QBE.filters.fillSelect) {
+          QBE.filters.fillSelect("rep-tipo", QBE.filters.TIPO_OPTS || ["Fenología", "Proyecciones"], "Todas");
+        } else if (QBE.filters && QBE.filters.syncPick) {
+          QBE.filters.syncPick(tipoEl);
+        }
+        tipoEl.addEventListener("change", function () {
           lastSig = "";
           if (QBE.app && QBE.app.pack) render(QBE.app.pack().records || [], { force: true });
         });
