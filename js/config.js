@@ -45,6 +45,7 @@
       "E4 (50%-70%)",
       "E5 (Maduro)",
       "Observación",
+      "Tipo",
       "Modulo",
       "Turno",
       "Lotes",
@@ -70,6 +71,7 @@
       "Campaña",
     ],
     detailFields: [
+      "Tipo",
       "Semana",
       "Etapa",
       "Variedad",

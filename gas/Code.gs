@@ -9,12 +9,14 @@
  * - Hoja 2 Proyecciones: registros. N° Muestra = 1..N automático por cartilla.
  * - POST action=addEvaluador | setAcceso | deleteEvaluador | deleteRegistro: alta / activar / borrar desde la web
  * - Yemas: Cerradas → Abierta → Muertas (sin Yema Productiva)
+ * - Columna Tipo (Fenología|Proyecciones) justo DESPUÉS de Observación
+ * - placeTipoColumn(): UNA VEZ si Tipo quedó al final / hay columna vacía
  * - repairProyeccionesLayout(): realinea data si se movieron columnas
  * - fixHoraYArea(): Hora solo HH:mm:ss + Area por lote
  *
  * SETUP:
  * 1) Sheet destino → Extensiones → Apps Script → pega este archivo (incluye catálogo de Area)
- * 2) Ejecuta UNA vez: setupSheets() y luego repairProyeccionesLayout()
+ * 2) Ejecuta UNA vez: placeTipoColumn()  (Tipo después de Observación; borra vacías)
  * 3) Si Hora/Area mal: ejecuta fixHoraYArea() (o POST action=fixHoraArea)
  * 4) La 1ª foto crea la carpeta Drive "QBerries-Proyecciones-Fotos"
  * 5) Implementar → Nueva implementación → Web App (Yo + Cualquier persona)
@@ -46,6 +48,7 @@ var HEADERS = [
   'E4 (50%-70%)',
   'E5 (Maduro)',
   'Observación',
+  'Tipo',
   'Modulo',
   'Turno',
   'Lotes',
@@ -98,12 +101,87 @@ function setupSheets() {
     styleHeader_(sheet, HEADERS.length);
   } else {
     splitEvaluadorColumn_(sheet);
+    ensureTipoAfterObservacion_(sheet);
     ensureHeaders_(sheet, HEADERS);
   }
   try {
     ss.setActiveSheet(evalSheet);
     ss.moveActiveSheet(1);
   } catch (_) {}
+}
+
+/**
+ * UNA VEZ desde el editor: Tipo justo después de Observación + borra columnas vacías al final.
+ */
+function placeTipoColumn() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) throw new Error('No existe hoja Proyecciones');
+  return ensureTipoAfterObservacion_(sheet);
+}
+
+/** Deja UNA columna Tipo inmediatamente después de Observación; quita vacías finales. */
+function ensureTipoAfterObservacion_(sheet) {
+  var lastCol = Math.max(sheet.getLastColumn(), 1);
+  var lastRow = Math.max(sheet.getLastRow(), 1);
+  var headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  var obsIdx = -1;
+  var tipoIdx = -1;
+  for (var i = 0; i < headers.length; i++) {
+    var h = String(headers[i] || '').trim();
+    if (h === 'Observación') obsIdx = i;
+    else if (h === 'Tipo') tipoIdx = i;
+  }
+  if (obsIdx < 0) {
+    return { ok: false, error: 'No está columna Observación' };
+  }
+
+  if (tipoIdx === obsIdx + 1) {
+    var cleaned = deleteTrailingBlankCols_(sheet);
+    styleHeader_(sheet, Math.max(sheet.getLastColumn(), HEADERS.length));
+    return { ok: true, moved: false, cleaned: cleaned, message: 'Tipo ya está después de Observación' };
+  }
+
+  var tipoVals = null;
+  if (tipoIdx >= 0) {
+    tipoVals = sheet.getRange(2, tipoIdx + 1, Math.max(lastRow - 1, 1), 1).getValues();
+    sheet.deleteColumn(tipoIdx + 1);
+    if (tipoIdx < obsIdx) obsIdx -= 1;
+    lastCol = Math.max(sheet.getLastColumn(), 1);
+  }
+
+  sheet.insertColumnAfter(obsIdx + 1);
+  var tipoCol = obsIdx + 2;
+  sheet.getRange(1, tipoCol).setValue('Tipo');
+  if (tipoVals && tipoVals.length && lastRow > 1) {
+    sheet.getRange(2, tipoCol, tipoVals.length, 1).setValues(tipoVals);
+  }
+  var cleaned2 = deleteTrailingBlankCols_(sheet);
+  styleHeader_(sheet, Math.max(sheet.getLastColumn(), HEADERS.length));
+  return {
+    ok: true,
+    moved: true,
+    col: tipoCol,
+    cleaned: cleaned2,
+    message: 'Tipo colocado después de Observación'
+  };
+}
+
+function deleteTrailingBlankCols_(sheet) {
+  var removed = 0;
+  for (var guard = 0; guard < 20; guard++) {
+    var lc = sheet.getLastColumn();
+    if (lc < 2) break;
+    var h = String(sheet.getRange(1, lc).getValue() || '').trim();
+    if (h) break;
+    try {
+      sheet.deleteColumn(lc);
+      removed += 1;
+    } catch (_) {
+      break;
+    }
+  }
+  return removed;
 }
 
 /**
@@ -255,23 +333,35 @@ function extractProyeccionRow_(raw) {
     o['Botón Floral'] = g(10); o.Flor = g(11); o.Cuaja = g(12);
     o['E1 (Verde)'] = g(13); o['E2 (Rosado)'] = g(14); o['E3 (Guinda)'] = g(15);
     o['E4 (50%-70%)'] = g(16); o['E5 (Maduro)'] = g(17);
+    o.Tipo = '';
     o['Observación'] = g(18); o.Modulo = g(19); o.Turno = g(20); o.Lotes = g(21);
     o.Semana = g(22); o.Etapa = g(23); o.Variedad = g(24); o.Area = g(25);
     o['Campaña'] = g(26);
     assignAnexoHora_(o, g(27), g(28));
     o._shift = true;
   } else {
-    // Layout nuevo: Cerradas → Abierta → Muertas (sin Productiva)
+    // Layout nuevo: Observación @17, Tipo @18, Modulo @19…
     o.Lote = g(0); o.Fecha = g(1); o.DNI = g(2); o.Nombre = g(3);
     o['N° Muestra'] = g(4); o['N° Ramas'] = g(5);
     o['Yemas Cerradas'] = g(6); o['Yema Abierta'] = g(7); o['Yemas Muertas'] = g(8);
     o['Botón Floral'] = g(9); o.Flor = g(10); o.Cuaja = g(11);
     o['E1 (Verde)'] = g(12); o['E2 (Rosado)'] = g(13); o['E3 (Guinda)'] = g(14);
     o['E4 (50%-70%)'] = g(15); o['E5 (Maduro)'] = g(16);
-    o['Observación'] = g(17); o.Modulo = g(18); o.Turno = g(19); o.Lotes = g(20);
-    o.Semana = g(21); o.Etapa = g(22); o.Variedad = g(23); o.Area = g(24);
-    o['Campaña'] = g(25);
-    assignAnexoHora_(o, g(26), g(27));
+    o['Observación'] = g(17);
+    var afterObs = String(g(18) == null ? '' : g(18)).trim();
+    if (isModuloToken_(afterObs)) {
+      o.Tipo = '';
+      o.Modulo = g(18); o.Turno = g(19); o.Lotes = g(20);
+      o.Semana = g(21); o.Etapa = g(22); o.Variedad = g(23); o.Area = g(24);
+      o['Campaña'] = g(25);
+      assignAnexoHora_(o, g(26), g(27));
+    } else {
+      o.Tipo = g(18);
+      o.Modulo = g(19); o.Turno = g(20); o.Lotes = g(21);
+      o.Semana = g(22); o.Etapa = g(23); o.Variedad = g(24); o.Area = g(25);
+      o['Campaña'] = g(26);
+      assignAnexoHora_(o, g(27), g(28));
+    }
   }
   return o;
 }
@@ -285,11 +375,11 @@ function doGet(e) {
       return json_({
         ok: true,
         api: 'proyecciones',
-        version: '1.4.6',
+        version: '1.4.8',
         sheets: [SHEET_EVAL, SHEET_NAME],
         headers: HEADERS,
         evalHeaders: EVAL_HEADERS,
-        acciones: ['proyecciones', 'evaluadores', 'hojas', 'acceso', 'addEvaluador', 'deleteEvaluador', 'deleteRegistro', 'fixHoraArea'],
+        acciones: ['proyecciones', 'evaluadores', 'hojas', 'acceso', 'addEvaluador', 'deleteEvaluador', 'deleteRegistro', 'fixHoraArea', 'placeTipo'],
         ts: nowIso_()
       });
     }
@@ -306,7 +396,7 @@ function doGet(e) {
       return json_({
         ok: true,
         api: 'proyecciones',
-        version: '1.4.6',
+        version: '1.4.8',
         evaluadores: listEvaluadores_(String(p.soloActivos || '') === '1'),
         proyecciones: listProyecciones_(p)
       });
@@ -330,7 +420,10 @@ function doPost(e) {
     var action = String(body.action || 'save').trim();
 
     if (action === 'ping') {
-      return json_({ ok: true, api: 'proyecciones', version: '1.4.6', ts: nowIso_() });
+      return json_({ ok: true, api: 'proyecciones', version: '1.4.8', ts: nowIso_() });
+    }
+    if (action === 'placeTipo' || action === 'placeTipoColumn') {
+      return json_(placeTipoColumn());
     }
     if (action === 'repairLayout' || action === 'repairProyeccionesLayout') {
       return json_(repairProyeccionesLayout());
@@ -444,6 +537,7 @@ function appendCartilla_(ss, body) {
 
 /** Escribe filas alineadas a los encabezados REALES de la hoja (por nombre). */
 function writeMatrixByHeaders_(sheet, startRow, matrix) {
+  ensureTipoAfterObservacion_(sheet);
   ensureHeaders_(sheet, HEADERS);
   var sheetHeaders = getHeaders_(sheet);
   var colCount = Math.max(sheetHeaders.length, HEADERS.length);
@@ -657,6 +751,15 @@ function buildMatrix_(body) {
     else map.Fecha = canonFechaSave_(map.Fecha, body.submittedAt || stamp);
     splitPersona_(data, map);
     map['N° Muestra'] = i + 1;
+    // Tipo (después de Observación): Fenología | Proyecciones
+    if (!map.Tipo) {
+      map.Tipo = data.tipo || data.tipoLabel || data.cartillaLabel || '';
+    }
+    if (!map.Tipo && data.type) {
+      var t = String(data.type).toLowerCase();
+      if (t === 'fenologia' || t === 'fenología') map.Tipo = 'Fenología';
+      else if (t === 'proyecciones' || t === 'proyeccion') map.Tipo = 'Proyecciones';
+    }
     if (!map.Observación && data.observacion) map.Observación = data.observacion;
     if (!map.Modulo) map.Modulo = data.modulo || '';
     delete map['Foto cabecera'];
@@ -1344,7 +1447,7 @@ function getHeaders_(sheet) {
 
 function ensureHeaders_(sheet, headers) {
   // No reescribe encabezados existentes (evita desalinear columnas viejas).
-  // Solo completa encabezados faltantes al final si la hoja está vacía o incompleta.
+  // Tipo NUNCA se agrega al final: va con ensureTipoAfterObservacion_.
   var current = getHeaders_(sheet);
   if (!current.length) {
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
@@ -1354,6 +1457,7 @@ function ensureHeaders_(sheet, headers) {
   var missing = [];
   for (var i = 0; i < headers.length; i++) {
     var want = headers[i];
+    if (want === 'Tipo') continue;
     var found = false;
     for (var j = 0; j < current.length; j++) {
       if (String(current[j] || '').trim() === want) {

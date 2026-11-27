@@ -72,6 +72,7 @@
       "E4 (50%-70%)": ["e4", "E4"],
       "E5 (Maduro)": ["e5", "E5"],
       Observación: ["observacion", "Observacion"],
+      Tipo: ["tipo", "tipoLabel", "cartillaLabel", "type", "Tipo evaluación", "tipoEvaluacion"],
       "Foto cabecera": ["foto", "Foto cabeza", "fotoCabecera", "Anexo", "anexo", "fotoUrl", "imagen"],
       Anexo: ["anexo", "Foto cabecera", "foto", "fotoCabecera"],
       "Hora subida": ["horaSubida", "hora_subida", "Hora Subida"],

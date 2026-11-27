@@ -746,6 +746,21 @@ table.he th[data-key="Etapa"] {
   white-space: nowrap;
 }
 
+table.he th[data-key="Tipo"],
+table.he td.col-tipo {
+  min-width: 7.5rem;
+  width: 7.5rem;
+  white-space: nowrap;
+}
+table.he thead th[data-key="Tipo"] {
+  color: #fff;
+  font-weight: 800;
+}
+table.he td.col-tipo {
+  font-weight: 800;
+  color: #2f5d22;
+}
+
 table.he th .sort-mark {
   margin-left: 4px;
   font-size: 11px;

@@ -217,6 +217,7 @@
         if (c === "Nombre") cls.push("col-nombre");
         if (c === "Fecha") cls.push("col-fecha");
         if (c === "Etapa") cls.push("col-etapa");
+        if (c === "Tipo") cls.push("col-tipo");
         if (stickyCls(c)) cls.push(stickyCls(c));
         return '<th data-key="' + esc(c) + '" class="' + cls.join(" ") + '">' + esc(c) + mark + "</th>";
       }).join("") + '<th class="col-acciones" data-no-sort>Acciones</th>';
@@ -239,6 +240,7 @@
             if (c === "Nombre" || c === "Evaluador") cellCls.push("col-nombre");
             if (c === "Fecha") cellCls.push("col-fecha");
             if (c === "Etapa") cellCls.push("col-etapa");
+            if (c === "Tipo") cellCls.push("col-tipo");
             stick = stickyCls(c);
             if (stick) cellCls.push(stick);
             html += '<td class="' + cellCls.join(" ") + heatClass(v, colores && isNumCol(c)) + '">' + esc(v === "" || v == null ? "—" : v) + "</td>";
@@ -265,7 +267,7 @@
     state._rows = sorted;
     state._pages = pages;
   }
-  var FILL_META = ["Lote", "Fecha", "DNI", "Nombre", "Modulo", "Turno", "Lotes", "Semana", "Etapa", "Variedad", "Area", "Campaña"];
+  var FILL_META = ["Lote", "Fecha", "DNI", "Nombre", "Tipo", "Modulo", "Turno", "Lotes", "Semana", "Etapa", "Variedad", "Area", "Campaña"];
   function cellEmpty(v) {
     return v == null || v === "" || v === "-";
   }
@@ -291,6 +293,11 @@
     }
     if (c === "Observación") {
       v = r["Observación"];
+      return cellEmpty(v) ? "" : v;
+    }
+    if (c === "Tipo") {
+      v = r.Tipo;
+      if (cellEmpty(v) && carry && !cellEmpty(carry.Tipo)) v = carry.Tipo;
       return cellEmpty(v) ? "" : v;
     }
     v = r[c];
@@ -324,7 +331,7 @@
         leftCols: [0, 1, 2, 3],
         zebra: true,
         boldFirstCol: true,
-        colWidths: { 0: 14, 1: 12, 2: 12, 3: 28 },
+        colWidths: { 0: 14, 1: 12, 2: 12, 3: 28, 18: 14 },
       });
     } else {
       var wb = XLSX.utils.book_new();
