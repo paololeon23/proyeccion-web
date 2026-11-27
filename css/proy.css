@@ -528,6 +528,28 @@
   color: #fff;
 }
 
+.pick-multi .pick-menu button {
+  position: relative;
+  padding-left: 34px;
+}
+.pick-multi .pick-menu button::before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin-top: -7px;
+  border: 1.5px solid #9aad8f;
+  border-radius: 4px;
+  background: #fff;
+  box-sizing: border-box;
+}
+.pick-multi .pick-menu button.on::before {
+  border-color: #fff;
+  background: #8dc63f url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='8' fill='none'%3E%3Cpath d='M1 4.2 3.6 6.6 9 1.4' stroke='%23fff' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat center;
+}
+
 .field-evaluador .pick-menu {
   min-width: 100%;
   width: max(100%, 320px);

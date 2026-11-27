@@ -51,7 +51,17 @@
       bits.push(label + " " + (el.tagName === "SELECT" ? el.options[el.selectedIndex].text : el.value));
     }
     one("f-modulo", "Módulo");
-    one("f-evaluador", "Evaluador");
+    if (f.evaluador && f.evaluador !== "*") {
+      if (Array.isArray(f.evaluador)) {
+        bits.push(
+          f.evaluador.length === 1
+            ? "Evaluador " + f.evaluador[0]
+            : "Evaluador " + f.evaluador.length + " seleccionados"
+        );
+      } else {
+        bits.push("Evaluador " + f.evaluador);
+      }
+    }
     one("f-etapa", "Etapa");
     one("f-semana", "Semana");
     if (f.desde) bits.push("Desde " + f.desde);

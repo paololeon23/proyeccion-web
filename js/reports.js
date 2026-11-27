@@ -39,22 +39,34 @@
   function range() {
     var a = document.getElementById("rep-desde");
     var b = document.getElementById("rep-hasta");
-    var e = document.getElementById("rep-evaluador");
+    var ev = "*";
+    if (QBE.filters && QBE.filters.pickFilterValue) {
+      ev = QBE.filters.pickFilterValue("rep-evaluador");
+    } else {
+      var e = document.getElementById("rep-evaluador");
+      ev = e ? String(e.value || "*").trim() : "*";
+    }
     return {
       desde: a ? String(a.value || "").trim() : "",
       hasta: b ? String(b.value || "").trim() : "",
-      evaluador: e ? String(e.value || "*").trim() : "*",
+      evaluador: ev,
     };
   }
   function filterRecords(records) {
     var r = range();
+    var evList = null;
+    if (r.evaluador && r.evaluador !== "*") {
+      evList = (Array.isArray(r.evaluador) ? r.evaluador : String(r.evaluador).split("||"))
+        .map(function (n) { return fold(n); })
+        .filter(Boolean);
+    }
     return (records || []).filter(function (row) {
       var f = dateKey(row.Fecha);
       if (!f) return false;
       if (r.desde && f < r.desde) return false;
       if (r.hasta && f > r.hasta) return false;
-      if (r.evaluador && r.evaluador !== "*") {
-        if (fold(row.Nombre) !== fold(r.evaluador)) return false;
+      if (evList && evList.length) {
+        if (evList.indexOf(fold(row.Nombre)) < 0) return false;
       }
       return true;
     });
@@ -114,10 +126,13 @@
     };
   }
   function packSig(pack, r) {
+    var evSig = "*";
+    if (Array.isArray(r.evaluador)) evSig = r.evaluador.length ? r.evaluador.join("||") : "*";
+    else if (r.evaluador) evSig = String(r.evaluador);
     return [
       r.desde || "",
       r.hasta || "",
-      r.evaluador || "*",
+      evSig,
       pack.total,
       pack.totalDias,
       pack.users.map(function (u) { return u.dni + ":" + u.muestras; }).join(","),
@@ -141,7 +156,10 @@
     if (!label) return;
     var desde = r.desde ? formatES(r.desde) : "—";
     var hasta = r.hasta ? formatES(r.hasta) : "—";
-    var ev = r.evaluador && r.evaluador !== "*" ? r.evaluador : "Todos";
+    var ev = "Todos";
+    if (r.evaluador && r.evaluador !== "*") {
+      ev = Array.isArray(r.evaluador) ? (r.evaluador.length + " seleccionados") : r.evaluador;
+    }
     label.textContent = desde + " → " + hasta + " · " + ev + " · " + (pack.total || 0) + " muestras";
   }
   function paintTable(users, r, pack) {
@@ -367,7 +385,8 @@
     }
     var ev = document.getElementById("rep-evaluador");
     if (ev) {
-      ev.value = "*";
+      if (QBE.filters && QBE.filters.setMultiValues) QBE.filters.setMultiValues(ev, ["*"]);
+      else ev.value = "*";
       if (QBE.filters && QBE.filters.syncPick) QBE.filters.syncPick(ev);
     }
     lastSig = "";
@@ -392,7 +411,9 @@
             QBE.audit.add(
               "Filtrar reportería",
               (r.desde || "…") + " → " + (r.hasta || "…") +
-              (r.evaluador && r.evaluador !== "*" ? " · " + r.evaluador : "")
+              (r.evaluador && r.evaluador !== "*"
+                ? " · " + (Array.isArray(r.evaluador) ? r.evaluador.join(", ") : r.evaluador)
+                : "")
             );
           }
         });
@@ -400,6 +421,8 @@
       if (clear) clear.addEventListener("click", clearFilters);
       if (xls) xls.addEventListener("click", exportXls);
       if (ev) {
+        if (ev.getAttribute("data-multi") !== "1") ev.setAttribute("data-multi", "1");
+        if (QBE.filters && QBE.filters.syncPick) QBE.filters.syncPick(ev);
         ev.addEventListener("change", function () {
           lastSig = "";
           if (QBE.app && QBE.app.pack) render(QBE.app.pack().records || [], { force: true });

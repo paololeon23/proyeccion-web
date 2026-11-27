@@ -6,16 +6,65 @@
     var el = document.getElementById(id);
     return el ? String(el.value || "").trim() : "";
   }
+  function isMultiPick(el) {
+    if (!el) return false;
+    if (el.getAttribute("data-multi") === "1") return true;
+    return el.id === "f-evaluador" || el.id === "rep-evaluador";
+  }
+  function getMultiValues(el) {
+    if (!el) return ["*"];
+    var raw = String(el.getAttribute("data-values") || "").trim();
+    if (!raw) {
+      var single = String(el.value || "*").trim();
+      return single ? [single] : ["*"];
+    }
+    if (raw === "*") return ["*"];
+    return raw.split("||").map(function (s) { return s.trim(); }).filter(Boolean);
+  }
+  function setMultiValues(el, values) {
+    if (!el) return;
+    var vals = (values || []).map(function (s) { return String(s || "").trim(); }).filter(Boolean);
+    if (!vals.length || vals.indexOf("*") >= 0) {
+      el.value = "*";
+      el.setAttribute("data-values", "*");
+      return;
+    }
+    el.value = vals[0];
+    el.setAttribute("data-values", vals.join("||"));
+  }
+  function multiBtnLabel(vals, placeholder) {
+    if (!vals || !vals.length || vals.indexOf("*") >= 0) return placeholder || "Todos";
+    if (vals.length === 1) return vals[0];
+    return vals.length + " seleccionados";
+  }
+  /** Para filtros: "*" | string | string[] */
+  function pickFilterValue(id) {
+    var el = document.getElementById(id);
+    if (!el) return "*";
+    if (!isMultiPick(el)) return String(el.value || "*").trim() || "*";
+    var vals = getMultiValues(el);
+    if (!vals.length || vals.indexOf("*") >= 0) return "*";
+    return vals.length === 1 ? vals[0] : vals;
+  }
   function fillSelect(id, items, placeholder) {
     var el = document.getElementById(id);
     if (!el) return;
+    var multi = isMultiPick(el);
+    var prevMulti = multi ? getMultiValues(el).slice() : null;
     var prev = el.value;
     var html = '<option value="*">' + placeholder + "</option>";
     (items || []).forEach(function (it) {
       html += '<option value="' + String(it).replace(/"/g, "&quot;") + '">' + String(it) + "</option>";
     });
     el.innerHTML = html;
-    if (prev && Array.prototype.some.call(el.options, function (o) { return o.value === prev; })) {
+    if (multi) {
+      if (el.getAttribute("data-multi") !== "1") el.setAttribute("data-multi", "1");
+      var kept = (prevMulti || []).filter(function (v) {
+        if (v === "*") return true;
+        return Array.prototype.some.call(el.options, function (o) { return o.value === v; });
+      });
+      setMultiValues(el, kept.length ? kept : ["*"]);
+    } else if (prev && Array.prototype.some.call(el.options, function (o) { return o.value === prev; })) {
       el.value = prev;
     } else {
       el.value = "*";
@@ -25,10 +74,12 @@
   function syncPick(el) {
     var field = el.closest ? el.closest(".field") : null;
     if (!field || field.classList.contains("field-action")) return;
+    var multi = isMultiPick(el);
+    if (multi && el.getAttribute("data-multi") !== "1") el.setAttribute("data-multi", "1");
     var pick = field.querySelector(".pick");
     if (!pick) {
       pick = document.createElement("div");
-      pick.className = "pick";
+      pick.className = "pick" + (multi ? " pick-multi" : "");
       pick.innerHTML = '<button type="button" class="pick-btn" aria-haspopup="listbox" aria-expanded="false"></button><div class="pick-menu" hidden role="listbox"></div>';
       el.classList.add("is-native");
       el.insertAdjacentElement("afterend", pick);
@@ -44,9 +95,34 @@
         btn.setAttribute("aria-expanded", menu.hidden ? "false" : "true");
       });
       menu.addEventListener("click", function (ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
         var item = ev.target.closest("button[data-value]");
         if (!item) return;
-        el.value = item.getAttribute("data-value");
+        var chosen = item.getAttribute("data-value");
+        if (isMultiPick(el)) {
+          var cur = getMultiValues(el).filter(function (v) { return v !== "*"; });
+          if (chosen === "*") {
+            setMultiValues(el, ["*"]);
+          } else {
+            var idx = -1;
+            for (var i = 0; i < cur.length; i += 1) {
+              if (cur[i] === chosen) { idx = i; break; }
+            }
+            if (idx >= 0) cur.splice(idx, 1);
+            else cur.push(chosen);
+            setMultiValues(el, cur.length ? cur : ["*"]);
+          }
+          var wasOpen = !menu.hidden;
+          syncPick(el);
+          if (wasOpen) {
+            menu.hidden = false;
+            btn.setAttribute("aria-expanded", "true");
+          }
+          el.dispatchEvent(new Event("change", { bubbles: true }));
+          return;
+        }
+        el.value = chosen;
         menu.hidden = true;
         btn.setAttribute("aria-expanded", "false");
         syncPick(el);
@@ -59,14 +135,21 @@
           document.querySelectorAll(".pick-btn").forEach(function (b) { b.setAttribute("aria-expanded", "false"); });
         });
       }
+    } else {
+      pick.classList.toggle("pick-multi", multi);
     }
-    var currentOpt = el.options[el.selectedIndex];
-    pick.querySelector(".pick-btn").textContent = currentOpt ? currentOpt.text : "";
+    var selected = multi ? getMultiValues(el) : [el.value];
+    var allOn = selected.indexOf("*") >= 0 || !selected.length;
+    var placeholder = el.options[0] ? el.options[0].text : "Todos";
+    pick.querySelector(".pick-btn").textContent = multi
+      ? multiBtnLabel(allOn ? ["*"] : selected, placeholder)
+      : (el.options[el.selectedIndex] ? el.options[el.selectedIndex].text : "");
     var menuEl = pick.querySelector(".pick-menu");
     var html = "";
     Array.prototype.forEach.call(el.options, function (o) {
+      var on = allOn ? o.value === "*" : selected.indexOf(o.value) >= 0;
       html += '<button type="button" role="option" data-value="' + String(o.value).replace(/"/g, "&quot;") + '"' +
-        (o.value === el.value ? ' class="on"' : "") + ">" + o.text + "</button>";
+        (on ? ' class="on" aria-selected="true"' : ' aria-selected="false"') + ">" + o.text + "</button>";
     });
     menuEl.innerHTML = html;
   }
@@ -80,7 +163,7 @@
       desde: val("f-desde"),
       hasta: val("f-hasta"),
       modulo: val("f-modulo") || "*",
-      evaluador: val("f-evaluador") || "*",
+      evaluador: pickFilterValue("f-evaluador"),
       etapa: val("f-etapa") || "*",
       semana: val("f-semana") || "*",
       q: searchValue(),
@@ -130,7 +213,8 @@
     ["f-modulo", "f-evaluador", "f-etapa", "f-semana"].forEach(function (id) {
       var el = document.getElementById(id);
       if (!el) return;
-      el.value = "*";
+      if (isMultiPick(el)) setMultiValues(el, ["*"]);
+      else el.value = "*";
       syncPick(el);
     });
     var t = todayIso();
@@ -239,6 +323,15 @@
       if (!el) return;
       el.addEventListener("change", onChange);
     });
+    // Evaluador multi: aplicar al marcar/desmarcar (Registros + Escaneadas).
+    var fEv = document.getElementById("f-evaluador");
+    if (fEv && !fEv._multiBound) {
+      fEv._multiBound = true;
+      if (fEv.getAttribute("data-multi") !== "1") fEv.setAttribute("data-multi", "1");
+      fEv.addEventListener("change", function () {
+        if (typeof onChange === "function") onChange({ apply: false });
+      });
+    }
     var filtrar = document.getElementById("btn-filtrar");
     if (filtrar && !filtrar._bound) {
       filtrar._bound = true;
@@ -275,5 +368,8 @@
     syncPick: syncPick,
     fillSelect: fillSelect,
     formatES: formatES,
+    pickFilterValue: pickFilterValue,
+    getMultiValues: getMultiValues,
+    setMultiValues: setMultiValues,
   };
 })(typeof window !== "undefined" ? window : globalThis);

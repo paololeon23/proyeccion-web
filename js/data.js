@@ -215,7 +215,13 @@
   }
   function matchesFilter(rec, f) {
     if (f.modulo && f.modulo !== "*" && canonModulo(rec.Modulo) !== canonModulo(f.modulo)) return false;
-    if (f.evaluador && f.evaluador !== "*" && fold(rec.Nombre) !== fold(f.evaluador)) return false;
+    if (f.evaluador && f.evaluador !== "*") {
+      var evList = Array.isArray(f.evaluador)
+        ? f.evaluador
+        : String(f.evaluador).split("||");
+      evList = evList.map(function (n) { return fold(n); }).filter(Boolean);
+      if (evList.length && evList.indexOf(fold(rec.Nombre)) < 0) return false;
+    }
     if (f.etapa && f.etapa !== "*" && fold(rec.Etapa) !== fold(f.etapa)) return false;
     if (f.semana && f.semana !== "*" && String(rec.Semana) !== String(f.semana)) return false;
     if (f.desde) {
