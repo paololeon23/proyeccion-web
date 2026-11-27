@@ -160,7 +160,7 @@
     var obs = row["Observación"];
     html += '<div class="detail-item detail-item-wide detail-obs"><span class="detail-label">Observación</span>' +
       '<strong class="detail-value">' + esc(obs === "" || obs == null ? "—" : obs) + "</strong></div>";
-    var fen = ["N° Muestra", "N° Ramas", "Yema Productiva", "Yema Abierta", "Yemas Cerradas", "Yemas Muertas",
+    var fen = ["N° Muestra", "N° Ramas", "Yemas Cerradas", "Yema Abierta", "Yemas Muertas",
       "Botón Floral", "Flor", "Cuaja", "E1 (Verde)", "E2 (Rosado)", "E3 (Guinda)", "E4 (50%-70%)", "E5 (Maduro)"];
     html += '<div class="detail-fen"><h3>Conteo fenológico</h3><div class="detail-fen-grid">';
     fen.forEach(function (key) {
@@ -319,10 +319,19 @@
         return exportVal(c, r, carry);
       }));
     });
-    var wb = XLSX.utils.book_new();
-    var ws = XLSX.utils.aoa_to_sheet(aoa);
-    XLSX.utils.book_append_sheet(wb, ws, "Proyecciones");
-    XLSX.writeFile(wb, "proyecciones-qberries.xlsx");
+    if (QBE.xls && QBE.xls.download) {
+      QBE.xls.download(aoa, "Proyecciones", "proyecciones-qberries.xlsx", {
+        leftCols: [0, 1, 2, 3],
+        zebra: true,
+        boldFirstCol: true,
+        colWidths: { 0: 14, 1: 12, 2: 12, 3: 28 },
+      });
+    } else {
+      var wb = XLSX.utils.book_new();
+      var ws = XLSX.utils.aoa_to_sheet(aoa);
+      XLSX.utils.book_append_sheet(wb, ws, "Proyecciones");
+      XLSX.writeFile(wb, "proyecciones-qberries.xlsx");
+    }
     if (QBE.audit) QBE.audit.add("Exportar Excel", rows.length + " registros");
   }
   function goPage(deltaOrCmd) {
@@ -381,8 +390,9 @@
       nMuestra: nMuestra,
       lote: row.Lote || "",
       fecha: row.Fecha || "",
-      dni: row.DNI || "",
-      row: row._row || 0,
+      dni: String(row.DNI || "").replace(/\D/g, ""),
+      row: Number(row._row) || 0,
+      _row: Number(row._row) || 0,
     }).then(function () {
       if (QBE.audit) QBE.audit.add("Eliminar registro", "Muestra " + nMuestra + " · " + nombre);
       if (QBE.shell && QBE.shell.toast) QBE.shell.toast("Muestra " + nMuestra + " eliminada");

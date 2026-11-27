@@ -120,6 +120,7 @@
   }
   function deleteRegistro(payload) {
     payload = payload || {};
+    var sheetRow = Number(payload.row || payload._row || 0) || 0;
     return post({
       action: "deleteRegistro",
       nombre: payload.nombre || "",
@@ -127,7 +128,8 @@
       lote: payload.lote || "",
       fecha: payload.fecha || "",
       dni: payload.dni || "",
-      row: payload.row || payload._row || 0,
+      row: sheetRow,
+      _row: sheetRow,
     });
   }
 

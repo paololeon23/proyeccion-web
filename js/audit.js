@@ -70,10 +70,18 @@
     var aoa = [["Fecha y hora", "Usuario", "Acción", "Detalle"]].concat(list.map(function (r) {
       return [r.cuando, r.usuario, r.accion, r.detalle];
     }));
-    var wb = XLSX.utils.book_new();
-    var ws = XLSX.utils.aoa_to_sheet(aoa);
-    XLSX.utils.book_append_sheet(wb, ws, "Movimientos");
-    XLSX.writeFile(wb, "movimientos-qberries.xlsx");
+    if (QBE.xls && QBE.xls.download) {
+      QBE.xls.download(aoa, "Movimientos", "movimientos-qberries.xlsx", {
+        leftCols: [1, 2, 3],
+        zebra: true,
+        colWidths: { 0: 18, 1: 22, 2: 22, 3: 40 },
+      });
+    } else {
+      var wb = XLSX.utils.book_new();
+      var ws = XLSX.utils.aoa_to_sheet(aoa);
+      XLSX.utils.book_append_sheet(wb, ws, "Movimientos");
+      XLSX.writeFile(wb, "movimientos-qberries.xlsx");
+    }
   }
   function render() {
     var body = document.getElementById("audit-body");

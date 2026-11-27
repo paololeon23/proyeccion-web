@@ -66,10 +66,18 @@
     var aoa = [cols].concat(list.map(function (u) {
       return [u.dni, u.nombre, u.rol, u.activo ? "Activo" : "Sin acceso"];
     }));
-    var wb = XLSX.utils.book_new();
-    var ws = XLSX.utils.aoa_to_sheet(aoa);
-    XLSX.utils.book_append_sheet(wb, ws, "Evaluadores");
-    XLSX.writeFile(wb, "evaluadores-qberries.xlsx");
+    if (QBE.xls && QBE.xls.download) {
+      QBE.xls.download(aoa, "Evaluadores", "evaluadores-qberries.xlsx", {
+        leftCols: [1],
+        zebra: true,
+        colWidths: { 0: 12, 1: 28, 2: 14, 3: 12 },
+      });
+    } else {
+      var wb = XLSX.utils.book_new();
+      var ws = XLSX.utils.aoa_to_sheet(aoa);
+      XLSX.utils.book_append_sheet(wb, ws, "Evaluadores");
+      XLSX.writeFile(wb, "evaluadores-qberries.xlsx");
+    }
     if (QBE.audit) QBE.audit.add("Exportar Excel usuarios", list.length + " evaluadores");
   }
   function render() {

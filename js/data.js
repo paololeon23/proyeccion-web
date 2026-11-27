@@ -60,7 +60,6 @@
       Nombre: ["nombre", "evaluadorNombre", "Evaluador", "evaluador"],
       "N° Muestra": ["nMuestra", "muestra", "N Muestra"],
       "N° Ramas": ["nRamas", "ramas"],
-      "Yema Productiva": ["yemaProductiva"],
       "Yema Abierta": ["yemaAbierta"],
       "Yemas Cerradas": ["yemasCerradas"],
       "Yemas Muertas": ["yemasMuertas"],
@@ -105,7 +104,7 @@
     out.Anexo = String(get(rec, "Anexo") || rec.Anexo || rec.anexo || "").trim();
     out["Hora subida"] = onlyTime(get(rec, "Hora subida") || "");
     out["Foto cabecera"] = out.Anexo || String(get(rec, "Foto cabecera") || rec.foto || rec.Foto || "").trim();
-    ["N° Muestra", "N° Ramas", "Yema Productiva", "Yema Abierta", "Yemas Cerradas", "Yemas Muertas",
+    ["N° Muestra", "N° Ramas", "Yemas Cerradas", "Yema Abierta", "Yemas Muertas",
       "Botón Floral", "Flor", "Cuaja", "E1 (Verde)", "E2 (Rosado)", "E3 (Guinda)", "E4 (50%-70%)", "E5 (Maduro)",
       "Turno", "Lotes", "Semana", "Area"].forEach(function (k) {
       if (out[k] !== "" && out[k] != null) out[k] = asNumber(out[k]) || out[k];

@@ -3,6 +3,8 @@
   var QBE = root.QBE || (root.QBE = {});
   var bound = false;
   var lastRows = [];
+  var lastPack = null;
+  var lastSig = "";
   var chartUsers = null;
   var chartDays = null;
   var palette = ["#2f5d22", "#4f7c35", "#7aa84a", "#a3c76b", "#c5dea0", "#1f3d16", "#5b8a3c", "#8bb85a"];
@@ -63,7 +65,7 @@
     (records || []).forEach(function (row) {
       var dni = String(row.DNI || "").replace(/\D/g, "");
       var nombre = String(row.Nombre || "").replace(/\s+/g, " ").trim() || "Sin nombre";
-      var key = dni || nombre;
+      var key = dni || fold(nombre);
       var fecha = dateKey(row.Fecha);
       var lote = String(row.Lote || "").trim();
       if (!byUser[key]) {
@@ -77,6 +79,8 @@
       }
       var u = byUser[key];
       u.muestras += 1;
+      if (nombre && u.nombre === "Sin nombre") u.nombre = nombre;
+      if (dni && !u.dni) u.dni = dni;
       if (lote) u.lotes[lote] = 1;
       if (fecha) {
         u.dias[fecha] = 1;
@@ -98,17 +102,33 @@
     var days = Object.keys(byDay).sort().map(function (d) {
       return { fecha: d, muestras: byDay[d] };
     });
-    return { users: users, days: days, total: records.length };
+    var totalMuestras = users.reduce(function (n, u) { return n + u.muestras; }, 0);
+    var totalLotes = users.reduce(function (n, u) { return n + u.lotes; }, 0);
+    var totalDias = Object.keys(byDay).length;
+    return {
+      users: users,
+      days: days,
+      total: totalMuestras,
+      totalLotes: totalLotes,
+      totalDias: totalDias,
+    };
   }
-  function destroyCharts() {
-    if (chartUsers) { try { chartUsers.destroy(); } catch (e) {} chartUsers = null; }
-    if (chartDays) { try { chartDays.destroy(); } catch (e) {} chartDays = null; }
+  function packSig(pack, r) {
+    return [
+      r.desde || "",
+      r.hasta || "",
+      r.evaluador || "*",
+      pack.total,
+      pack.totalDias,
+      pack.users.map(function (u) { return u.dni + ":" + u.muestras; }).join(","),
+      pack.days.map(function (d) { return d.fecha + ":" + d.muestras; }).join(","),
+    ].join("|");
   }
   function fillEvaluadores(records) {
     if (!QBE.filters || !QBE.filters.fillSelect) return;
     var names = {};
-    (records || []).forEach(function (r) {
-      var n = String(r.Nombre || "").replace(/\s+/g, " ").trim();
+    (records || []).forEach(function (row) {
+      var n = String(row.Nombre || "").replace(/\s+/g, " ").trim();
       if (n) names[n] = 1;
     });
     var list = Object.keys(names).sort(function (a, b) {
@@ -116,15 +136,15 @@
     });
     QBE.filters.fillSelect("rep-evaluador", list, "Todos");
   }
-  function paintRangeLabel(r) {
+  function paintRangeLabel(r, pack) {
     var label = document.getElementById("report-range-label");
     if (!label) return;
     var desde = r.desde ? formatES(r.desde) : "—";
     var hasta = r.hasta ? formatES(r.hasta) : "—";
     var ev = r.evaluador && r.evaluador !== "*" ? r.evaluador : "Todos";
-    label.textContent = desde + " → " + hasta + " · " + ev;
+    label.textContent = desde + " → " + hasta + " · " + ev + " · " + (pack.total || 0) + " muestras";
   }
-  function paintTable(users, r) {
+  function paintTable(users, r, pack) {
     var body = document.getElementById("report-body");
     if (!body) return;
     var desde = r.desde ? formatES(r.desde) : "—";
@@ -133,7 +153,7 @@
       body.innerHTML = '<tr class="empty"><td colspan="7">Sin muestras en el rango seleccionado.</td></tr>';
       return;
     }
-    body.innerHTML = users.map(function (u) {
+    var rows = users.map(function (u) {
       return "<tr>" +
         '<td class="dni">' + esc(u.dni || "—") + "</td>" +
         '<td class="col-nombre">' + esc(u.nombre) + "</td>" +
@@ -143,39 +163,45 @@
         "<td>" + esc(desde) + "</td>" +
         "<td>" + esc(hasta) + "</td>" +
         "</tr>";
-    }).join("");
+    });
+    rows.push(
+      '<tr class="row-total report-total">' +
+        "<td></td>" +
+        "<td>Total</td>" +
+        '<td class="num">' + esc(pack.total || 0) + "</td>" +
+        '<td class="num">' + esc(pack.totalLotes || 0) + "</td>" +
+        '<td class="num">' + esc(pack.totalDias || 0) + "</td>" +
+        "<td>" + esc(desde) + "</td>" +
+        "<td>" + esc(hasta) + "</td>" +
+      "</tr>"
+    );
+    body.innerHTML = rows.join("");
   }
-  function paintCharts(pack) {
-    destroyCharts();
+  function chartOptsBase() {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      animations: false,
+      plugins: { legend: { display: false } },
+    };
+  }
+  function ensureCharts() {
     if (typeof Chart === "undefined") return;
-    var users = pack.users.slice(0, 12);
     var ctxU = document.getElementById("report-chart-users");
     var ctxD = document.getElementById("report-chart-days");
-    if (ctxU) {
+    if (ctxU && !chartUsers) {
       chartUsers = new Chart(ctxU, {
         type: "bar",
-        data: {
-          labels: users.map(function (u) {
-            var parts = String(u.nombre || "").split(" ");
-            return parts.slice(0, 2).join(" ") || u.dni || "—";
-          }),
-          datasets: [{
-            label: "Muestras",
-            data: users.map(function (u) { return u.muestras; }),
-            backgroundColor: users.map(function (_, i) { return palette[i % palette.length]; }),
-            borderRadius: 8,
-            maxBarThickness: 42,
-          }],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
+        data: { labels: [], datasets: [{ label: "Muestras", data: [], backgroundColor: [], borderRadius: 8, maxBarThickness: 42 }] },
+        options: Object.assign(chartOptsBase(), {
           plugins: {
             legend: { display: false },
             tooltip: {
               callbacks: {
                 title: function (items) {
                   var i = items[0] && items[0].dataIndex;
+                  var users = (lastPack && lastPack.users) || [];
                   return users[i] ? users[i].nombre : "";
                 },
               },
@@ -192,17 +218,17 @@
               grid: { color: "rgba(47,93,34,0.08)" },
             },
           },
-        },
+        }),
       });
     }
-    if (ctxD) {
+    if (ctxD && !chartDays) {
       chartDays = new Chart(ctxD, {
         type: "line",
         data: {
-          labels: pack.days.map(function (d) { return formatES(d.fecha); }),
+          labels: [],
           datasets: [{
             label: "Muestras / día",
-            data: pack.days.map(function (d) { return d.muestras; }),
+            data: [],
             borderColor: "#2f5d22",
             backgroundColor: "rgba(47,93,34,0.12)",
             fill: true,
@@ -211,10 +237,7 @@
             pointBackgroundColor: "#2f5d22",
           }],
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
+        options: Object.assign(chartOptsBase(), {
           scales: {
             x: {
               ticks: { color: "#5b6470", font: { size: 11, weight: "600" } },
@@ -226,8 +249,29 @@
               grid: { color: "rgba(47,93,34,0.08)" },
             },
           },
-        },
+        }),
       });
+    }
+  }
+  function paintCharts(pack) {
+    ensureCharts();
+    if (!chartUsers && !chartDays) return;
+    var users = pack.users.slice(0, 12);
+    if (chartUsers) {
+      chartUsers.data.labels = users.map(function (u) {
+        var parts = String(u.nombre || "").split(" ");
+        return parts.slice(0, 2).join(" ") || u.dni || "—";
+      });
+      chartUsers.data.datasets[0].data = users.map(function (u) { return u.muestras; });
+      chartUsers.data.datasets[0].backgroundColor = users.map(function (_, i) {
+        return palette[i % palette.length];
+      });
+      chartUsers.update("none");
+    }
+    if (chartDays) {
+      chartDays.data.labels = pack.days.map(function (d) { return formatES(d.fecha); });
+      chartDays.data.datasets[0].data = pack.days.map(function (d) { return d.muestras; });
+      chartDays.update("none");
     }
   }
   function exportXls() {
@@ -235,27 +279,55 @@
     var r = range();
     var desde = r.desde ? formatES(r.desde) : "";
     var hasta = r.hasta ? formatES(r.hasta) : "";
+    var pack = lastPack || { users: lastRows, total: 0, totalLotes: 0, totalDias: 0 };
     var aoa = [["DNI", "Evaluador", "Muestras", "Lotes", "Días activos", "Desde", "Hasta"]];
-    lastRows.forEach(function (u) {
+    (pack.users || []).forEach(function (u) {
       aoa.push([u.dni || "", u.nombre, u.muestras, u.lotes, u.dias, desde, hasta]);
     });
-    var wb = XLSX.utils.book_new();
-    var ws = XLSX.utils.aoa_to_sheet(aoa);
-    XLSX.utils.book_append_sheet(wb, ws, "Reporteria");
-    XLSX.writeFile(wb, "reporteria-usuarios-qberries.xlsx");
-    if (QBE.audit) QBE.audit.add("Exportar Excel reportería", lastRows.length + " usuarios");
+    aoa.push(["", "Total", pack.total || 0, pack.totalLotes || 0, pack.totalDias || 0, desde, hasta]);
+    if (QBE.xls && QBE.xls.download) {
+      QBE.xls.download(aoa, "Reporteria", "reporteria-usuarios-qberries.xlsx", {
+        leftCols: [1],
+        zebra: true,
+        totalRows: [aoa.length - 1],
+        boldFirstCol: false,
+        colWidths: { 0: 12, 1: 28, 2: 12, 3: 10, 4: 12, 5: 12, 6: 12 },
+      });
+    } else {
+      var wb = XLSX.utils.book_new();
+      var ws = XLSX.utils.aoa_to_sheet(aoa);
+      XLSX.utils.book_append_sheet(wb, ws, "Reporteria");
+      XLSX.writeFile(wb, "reporteria-usuarios-qberries.xlsx");
+    }
+    if (QBE.audit) QBE.audit.add("Exportar Excel reportería", (pack.users || []).length + " usuarios");
     if (QBE.shell && QBE.shell.toast) QBE.shell.toast("Excel de reportería listo");
   }
-  function render(records) {
+  function isReporteriaPage() {
+    return String(location.hash || "").indexOf("reporteria") >= 0;
+  }
+  function render(records, opts) {
+    opts = opts || {};
+    if (!opts.force && !isReporteriaPage() && bound) {
+      /* Fuera de /reporteria no re-pintar gráficos (evita parpadeo por poll). */
+      return;
+    }
     var all = records || [];
     fillEvaluadores(all);
     var r = range();
     var filtered = filterRecords(all);
     var pack = build(filtered);
+    var sig = packSig(pack, r);
+    if (sig === lastSig && chartUsers && chartDays) {
+      lastPack = pack;
+      lastRows = pack.users;
+      return;
+    }
+    lastSig = sig;
+    lastPack = pack;
     lastRows = pack.users;
     lastRows._days = pack.days;
-    paintRangeLabel(r);
-    paintTable(pack.users, r);
+    paintRangeLabel(r, pack);
+    paintTable(pack.users, r, pack);
     paintCharts(pack);
   }
   function todayIso() {
@@ -298,7 +370,8 @@
       ev.value = "*";
       if (QBE.filters && QBE.filters.syncPick) QBE.filters.syncPick(ev);
     }
-    if (QBE.app && QBE.app.pack) render(QBE.app.pack().records || []);
+    lastSig = "";
+    if (QBE.app && QBE.app.pack) render(QBE.app.pack().records || [], { force: true });
     if (QBE.audit) QBE.audit.add("Desfiltrar reportería", iso + " → " + iso);
     if (QBE.shell && QBE.shell.toast) QBE.shell.toast("Filtros de reportería limpios");
   }
@@ -312,7 +385,8 @@
       var ev = document.getElementById("rep-evaluador");
       if (apply) {
         apply.addEventListener("click", function () {
-          if (QBE.app && QBE.app.pack) render(QBE.app.pack().records || []);
+          lastSig = "";
+          if (QBE.app && QBE.app.pack) render(QBE.app.pack().records || [], { force: true });
           if (QBE.audit) {
             var r = range();
             QBE.audit.add(
@@ -327,13 +401,15 @@
       if (xls) xls.addEventListener("click", exportXls);
       if (ev) {
         ev.addEventListener("change", function () {
-          if (QBE.app && QBE.app.pack) render(QBE.app.pack().records || []);
+          lastSig = "";
+          if (QBE.app && QBE.app.pack) render(QBE.app.pack().records || [], { force: true });
         });
       }
     } else {
       setupDates();
     }
-    if (QBE.app && QBE.app.pack) render(QBE.app.pack().records || []);
+    lastSig = "";
+    if (QBE.app && QBE.app.pack) render(QBE.app.pack().records || [], { force: true });
   }
 
   QBE.reports = { bind: bind, render: render };

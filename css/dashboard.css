@@ -207,18 +207,22 @@ table.he thead th {
   padding: 10px 10px;
   white-space: nowrap;
   border-bottom: 2px solid var(--yellow);
+  border-right: 1px solid rgba(255, 255, 255, 0.18);
   cursor: pointer;
   z-index: 1;
   letter-spacing: 0.02em;
   font-size: var(--fs-xs);
 }
+table.he thead th:last-child { border-right: 0; }
 table.he td {
   padding: 8px 10px;
   border-bottom: 1px solid #e6ebe0;
+  border-right: 1px solid #d7e3c8;
   color: var(--ink);
   background: #fff;
   font-size: var(--fs-sm);
 }
+table.he td:last-child { border-right: 0; }
 table.he tbody tr:nth-child(even) td { background: #f7faf3; }
 table.he tbody tr:hover td { background: var(--qb-soft); }
 table.he .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
