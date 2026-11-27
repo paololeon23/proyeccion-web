@@ -74,7 +74,6 @@
       "Tipo",
       "Semana",
       "Etapa",
-      "Variedad",
       "Area",
       "Campaña",
       "Lotes",
